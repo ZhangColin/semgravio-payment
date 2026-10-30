@@ -7,7 +7,7 @@ set -e
 BASE_URL="http://localhost:8081"
 API_PATH="/api/v1/payments/prepay"
 
-# 调用方的 appId 和 appSecret（需要从 aieducenter 管理后台获取）
+# 调用方的 appId 和 appSecret（需要从 semgravio 管理后台获取）
 CALLER_APP_ID="${CALLER_APP_ID:-你的调用方AppId}"
 CALLER_APP_SECRET="${CALLER_APP_SECRET:-你的调用方AppSecret}"
 

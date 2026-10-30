@@ -13,12 +13,12 @@
 - 父 spec：Issue #8（实现规约）；本票：Issue #12（T4 · 退款订单列表）。
 - 范式参照（直接沿用）：`docs/superpowers/plans/2026-08-11-payment-order-list.md`（T2，本仓列表查询范式）；`PaymentOrderQueryAppService` / `PaymentOrderQuery` / `PaymentOrderMapper` / `PaymentApiV1Controller`。
 - 前置票：Issue #11（T3 · RefundOrder 引入 auditType）——本票筛选维度 `auditType` 即 T3 落地的字段。
-- 术语：`CONTEXT.md`（不变式 5「对外接口与领域逻辑与具体银行解耦」；`auditType` 词条）。
+- 术语：`GLOSSARY.md`（不变式 5「对外接口与领域逻辑与具体银行解耦」；`auditType` 词条）。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`；框架手册：`docs/guide/cartisan-boot-使用手册.md`（@Condition 11 种条件类型、Pageable）。
 
 ## Global Constraints
 
-- **银行无关**：查询全程不出现 ICBC / 具体银行硬编码（CONTEXT.md 不变式 5）。退款无通道枚举筛选（退款不区分通道），无需引入银行维度。
+- **银行无关**：查询全程不出现 ICBC / 具体银行硬编码（GLOSSARY.md 不变式 5）。退款无通道枚举筛选（退款不区分通道），无需引入银行维度。
 - **不动既有写侧逻辑**：不修改 `RefundOrder` 聚合、既有枚举（`RefundStatus`/`AuditType`）、`RefundOrderResponse`、`GET /api/v1/refunds/{refundOrderNo}`、`RefundAppService` 的业务方法。唯一允许的写侧改动是**行为保持的重构**——把 `RefundAppService` 私有 `toResponse` 方法体搬到 `RefundOrderMapper.convert` 静态方法、调用点改为静态调用（无新增字段、无构造函数变化、输出逐字段不变）。
 - **DTO 只用 Record**；响应只暴露 DTO，不暴露聚合；枚举以 Integer code + String name 暴露（沿用 `RefundOrderResponse` 的 `status/statusName`、`auditType/auditTypeName` 约定）。
 - **构造函数注入**（`@RequiredArgsConstructor`），禁止字段注入。
@@ -41,7 +41,7 @@
 | 仓储多条件查询 | **复用 `BaseRepository.findAll(Specification, Pageable)`，不改 `RefundOrderRepository` 接口** | 与 T2/OperationLog 一致；无需派生方法或 `@Query`，缝最少。既有 `findByStatusIn` 不动（保留，不破坏调用方）。 |
 | 新增索引 | V9 给 `audit_type` / `auditor_id` / `refund_amount` / `created_at` 建部分索引 | V1 已覆盖 `payment_order_no` / `business_order_no` / `business_system_name` / `status`（+ `refund_order_no` UNIQUE）；本票新增筛选维度 `audit_type`/`auditor_id`/`refund_amount` 需补索引；`created_at` 区间筛选高频但 V1 漏建（支付侧 V1 有 `idx_payment_orders_created_at`，退款侧 V1 无），一并补齐。acceptance criteria「为筛选用字段建索引」。 |
 | 端点位置 | **在既有 `RefundApiV1Controller` 加 `@GetMapping list`** | `/api/v1/refunds` 已是控制器根路径；详情 `GET /{refundOrderNo}` 不动；list 与 detail 同控制器，Spring 路由无冲突（`GET /` vs `GET /{no}`）。 |
-| pitest 范围 | `targetClasses` 增 `com.aieducenter.payment.application.RefundOrderQueryAppService` | 与 T2/OperationLog 一致；query record / DTO / 控制器 / 枚举 / Mapper 不在变异评分范围（pom 既有约定）。 |
+| pitest 范围 | `targetClasses` 增 `com.semgravio.payment.application.RefundOrderQueryAppService` | 与 T2/OperationLog 一致；query record / DTO / 控制器 / 枚举 / Mapper 不在变异评分范围（pom 既有约定）。 |
 
 ## File Structure
 
@@ -49,7 +49,7 @@
 src/main/resources/db/migration/
 └── V9__add_refund_order_query_indexes.sql                   [新] 为 audit_type/auditor_id/refund_amount/created_at 建部分索引
 
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── application/
 │   ├── dto/query/
 │   │   └── RefundOrderQuery.java                            [新] @Condition 多条件 record
@@ -60,7 +60,7 @@ src/main/java/com/aieducenter/payment/
 └── endpoints/api/v1/
     └── RefundApiV1Controller.java                           [改] +GET /api/v1/refunds（list，薄委托）
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 └── application/
     └── RefundOrderQueryAppServiceTest.java                  [新] Mockito 缝（list 参数传递 + 响应映射）
 
@@ -113,11 +113,11 @@ git commit -m "feat(payment): V9 迁移——退款订单列表筛选用字段�
 ### Task 2: `RefundOrderQueryAppService` + `RefundOrderQuery` + `RefundOrderMapper` + `RefundAppService` 重构（TDD）
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/query/RefundOrderQuery.java`
-- Create: `src/main/java/com/aieducenter/payment/application/mapper/RefundOrderMapper.java`
-- Create: `src/main/java/com/aieducenter/payment/application/RefundOrderQueryAppService.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/RefundAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/RefundOrderQueryAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/query/RefundOrderQuery.java`
+- Create: `src/main/java/com/semgravio/payment/application/mapper/RefundOrderMapper.java`
+- Create: `src/main/java/com/semgravio/payment/application/RefundOrderQueryAppService.java`
+- Modify: `src/main/java/com/semgravio/payment/application/RefundAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/RefundOrderQueryAppServiceTest.java`
 
 **Interfaces:**
 - Consumes: `RefundOrderRepository`（既有，`extends BaseRepository` → 已有 `findAll(Specification, Pageable)`）；`RefundOrder`（既有，含 `auditType`/`auditorId`/`refundAmount`/`status` 等 getter）；`RefundOrderResponse`（既有 record）。
@@ -130,13 +130,13 @@ git commit -m "feat(payment): V9 迁移——退款订单列表筛选用字段�
 
 - [ ] **Step 1: 写查询条件 record（测试编译依赖的类型先行）**
 
-创建 `src/main/java/com/aieducenter/payment/application/dto/query/RefundOrderQuery.java`：
+创建 `src/main/java/com/semgravio/payment/application/dto/query/RefundOrderQuery.java`：
 
 ```java
-package com.aieducenter.payment.application.dto.query;
+package com.semgravio.payment.application.dto.query;
 
-import com.aieducenter.payment.domain.enums.AuditType;
-import com.aieducenter.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.enums.AuditType;
+import com.semgravio.payment.domain.enums.RefundStatus;
 import com.cartisan.data.jpa.specification.Condition;
 import com.cartisan.data.jpa.specification.ConditionType;
 
@@ -174,18 +174,18 @@ public record RefundOrderQuery(
 
 - [ ] **Step 2: 写失败测试（Mockito 缝）**
 
-创建 `src/test/java/com/aieducenter/payment/application/RefundOrderQueryAppServiceTest.java`：
+创建 `src/test/java/com/semgravio/payment/application/RefundOrderQueryAppServiceTest.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.RefundOrderQuery;
-import com.aieducenter.payment.application.dto.response.RefundOrderResponse;
-import com.aieducenter.payment.application.mapper.RefundOrderMapper;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.enums.AuditType;
-import com.aieducenter.payment.domain.enums.RefundStatus;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.application.dto.query.RefundOrderQuery;
+import com.semgravio.payment.application.dto.response.RefundOrderResponse;
+import com.semgravio.payment.application.mapper.RefundOrderMapper;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.enums.AuditType;
+import com.semgravio.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -299,13 +299,13 @@ Expected: 编译失败——`RefundOrderQueryAppService` 与 `RefundOrderMapper.
 
 - [ ] **Step 4: 写 `RefundOrderMapper`（提取自 `RefundAppService.toResponse`，逐字段一致）**
 
-创建 `src/main/java/com/aieducenter/payment/application/mapper/RefundOrderMapper.java`：
+创建 `src/main/java/com/semgravio/payment/application/mapper/RefundOrderMapper.java`：
 
 ```java
-package com.aieducenter.payment.application.mapper;
+package com.semgravio.payment.application.mapper;
 
-import com.aieducenter.payment.application.dto.response.RefundOrderResponse;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.application.dto.response.RefundOrderResponse;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
 import org.mapstruct.Mapper;
 
 import java.util.List;
@@ -372,16 +372,16 @@ public interface RefundOrderMapper {
 
 - [ ] **Step 5: 写 `RefundOrderQueryAppService`（最小实现使测试通过）**
 
-创建 `src/main/java/com/aieducenter/payment/application/RefundOrderQueryAppService.java`：
+创建 `src/main/java/com/semgravio/payment/application/RefundOrderQueryAppService.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.RefundOrderQuery;
-import com.aieducenter.payment.application.dto.response.RefundOrderResponse;
-import com.aieducenter.payment.application.mapper.RefundOrderMapper;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.application.dto.query.RefundOrderQuery;
+import com.semgravio.payment.application.dto.response.RefundOrderResponse;
+import com.semgravio.payment.application.mapper.RefundOrderMapper;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
 import com.cartisan.data.jpa.specification.ConditionSpecifications;
 import com.cartisan.web.response.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -395,7 +395,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>spec「按职责拆分应用服务」：与既有写侧 {@code RefundAppService}（创建 / 审核 / 查状态同步）分离，
  * 仅承担多条件分页读列表。详情沿用既有 {@code RefundAppService.queryRefund}。查询银行无关
- * （CONTEXT.md 不变式 5）。沿用 T2（支付订单列表）确立的本仓列表查询范式。</p>
+ * （GLOSSARY.md 不变式 5）。沿用 T2（支付订单列表）确立的本仓列表查询范式。</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -428,9 +428,9 @@ public class RefundOrderQueryAppService {
 
 - [ ] **Step 6: 重构 `RefundAppService`——删除私有 `toResponse`，调用点改静态 `RefundOrderMapper.convert`**
 
-修改 `src/main/java/com/aieducenter/payment/application/RefundAppService.java`：
+修改 `src/main/java/com/semgravio/payment/application/RefundAppService.java`：
 
-(a) import 区加 `import com.aieducenter.payment.application.mapper.RefundOrderMapper;`
+(a) import 区加 `import com.semgravio.payment.application.mapper.RefundOrderMapper;`
 
 (b) 把 4 处 `toResponse(...)` 调用改为 `RefundOrderMapper.convert(...)`：
    - `createRefund` 末尾 `return toResponse(saved);` → `return RefundOrderMapper.convert(saved);`
@@ -456,11 +456,11 @@ Expected: BUILD SUCCESS——重构行为保持，既有测试全绿。
 - [ ] **Step 9: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/query/RefundOrderQuery.java \
-        src/main/java/com/aieducenter/payment/application/mapper/RefundOrderMapper.java \
-        src/main/java/com/aieducenter/payment/application/RefundOrderQueryAppService.java \
-        src/main/java/com/aieducenter/payment/application/RefundAppService.java \
-        src/test/java/com/aieducenter/payment/application/RefundOrderQueryAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/query/RefundOrderQuery.java \
+        src/main/java/com/semgravio/payment/application/mapper/RefundOrderMapper.java \
+        src/main/java/com/semgravio/payment/application/RefundOrderQueryAppService.java \
+        src/main/java/com/semgravio/payment/application/RefundAppService.java \
+        src/test/java/com/semgravio/payment/application/RefundOrderQueryAppServiceTest.java
 git commit -m "feat(payment): RefundOrderQueryAppService（list 多条件分页，含 auditType/auditorId）+ Query + Mapper"
 ```
 
@@ -469,7 +469,7 @@ git commit -m "feat(payment): RefundOrderQueryAppService（list 多条件分页�
 ### Task 3: 端点 `GET /api/v1/refunds`（薄委托）
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java`
 
 **Interfaces:**
 - Consumes: Task 2 的 `RefundOrderQueryAppService.list(query, pageable)`。
@@ -477,13 +477,13 @@ git commit -m "feat(payment): RefundOrderQueryAppService（list 多条件分页�
 
 - [ ] **Step 1: 在控制器加 list 端点（注入新 AppService + 加 GET 方法）**
 
-修改 `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java`：
+修改 `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java`：
 
 1. import 区追加（按既有导入顺序）：
 
 ```java
-import com.aieducenter.payment.application.RefundOrderQueryAppService;
-import com.aieducenter.payment.application.dto.query.RefundOrderQuery;
+import com.semgravio.payment.application.RefundOrderQueryAppService;
+import com.semgravio.payment.application.dto.query.RefundOrderQuery;
 import com.cartisan.web.response.PageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -519,7 +519,7 @@ Expected: BUILD SUCCESS——分层规则通过（Controller 可用领域枚举 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java
 git commit -m "feat(payment): GET /api/v1/refunds 端点（@RequireSignature 多条件分页）"
 ```
 
@@ -536,7 +536,7 @@ git commit -m "feat(payment): GET /api/v1/refunds 端点（@RequireSignature 多
 
 - [ ] **Step 1: 把新 AppService 纳入 pitest targetClasses**
 
-修改 `pom.xml` 的 `<targetClasses>` 段（约 236–241 行），追加一行 `<param>com.aieducenter.payment.application.RefundOrderQueryAppService</param>`，并在该段上方注释补一行说明（issue #12 追加）：
+修改 `pom.xml` 的 `<targetClasses>` 段（约 236–241 行），追加一行 `<param>com.semgravio.payment.application.RefundOrderQueryAppService</param>`，并在该段上方注释补一行说明（issue #12 追加）：
 
 ```xml
                         issue #10 起追加 PaymentOrderQueryAppService（同属可测的查询应用服务缝）。
@@ -546,11 +546,11 @@ git commit -m "feat(payment): GET /api/v1/refunds 端点（@RequireSignature 多
                         枚举（纯值对象）、MapStruct 生成实现不在变异评分范围。
                     -->
                     <targetClasses>
-                        <param>com.aieducenter.payment.domain.aggregate.OperationLog</param>
-                        <param>com.aieducenter.payment.application.OperationLogAppService</param>
-                        <param>com.aieducenter.payment.application.PaymentOrderQueryAppService</param>
-                        <param>com.aieducenter.payment.domain.aggregate.RefundOrder</param>
-                        <param>com.aieducenter.payment.application.RefundOrderQueryAppService</param>
+                        <param>com.semgravio.payment.domain.aggregate.OperationLog</param>
+                        <param>com.semgravio.payment.application.OperationLogAppService</param>
+                        <param>com.semgravio.payment.application.PaymentOrderQueryAppService</param>
+                        <param>com.semgravio.payment.domain.aggregate.RefundOrder</param>
+                        <param>com.semgravio.payment.application.RefundOrderQueryAppService</param>
                     </targetClasses>
 ```
 

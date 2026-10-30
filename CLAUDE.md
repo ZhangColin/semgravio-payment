@@ -1,4 +1,4 @@
-# aieducenter-payment
+# semgravio-payment
 
 Service 服务，基于 cartisan-boot 框架。
 

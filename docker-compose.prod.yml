@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: aieducenter-payment
+    container_name: semgravio-payment
     restart: unless-stopped
     env_file:
       - .env.production

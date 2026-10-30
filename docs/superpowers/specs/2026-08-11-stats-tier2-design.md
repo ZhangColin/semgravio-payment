@@ -6,7 +6,7 @@
 
 ## 1. 目标与范围
 
-在既有 `StatsAppService` / `StatsQueryRepository` / `JooqStatsQueryRepository` / `StatsApiV1Controller` 上**追加** 4 个只读统计方法 + 端点，全部 `@RequireSignature`、**银行无关**（CONTEXT.md 不变式 5）：
+在既有 `StatsAppService` / `StatsQueryRepository` / `JooqStatsQueryRepository` / `StatsApiV1Controller` 上**追加** 4 个只读统计方法 + 端点，全部 `@RequireSignature`、**银行无关**（GLOSSARY.md 不变式 5）：
 
 | 端点 | 参数 | 数据源 |
 |---|---|---|

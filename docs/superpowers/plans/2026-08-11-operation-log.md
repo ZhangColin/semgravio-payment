@@ -11,13 +11,13 @@
 ## 关联文档
 
 - 父 spec：Issue #8（实现规约）。
-- 术语：`CONTEXT.md`（OperationLog / PaymentLog 职责分离、不变式 5「银行无关」）。
+- 术语：`GLOSSARY.md`（OperationLog / PaymentLog 职责分离、不变式 5「银行无关」）。
 - 决策：`docs/adr/0002-operation-log-separation.md`（不合表、合视图；追加只写）。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`。
 
 ## Global Constraints
 
-- **银行无关**：OperationLog 全程不出现 ICBC / 具体银行硬编码（CONTEXT.md 不变式 5）。
+- **银行无关**：OperationLog 全程不出现 ICBC / 具体银行硬编码（GLOSSARY.md 不变式 5）。
 - **追加只写**：聚合无状态迁移方法，只有构造（ADR-0002）。
 - **TSID 主键**：`@PrePersist` 内 `TsidGenerator.newInstance().generate()`，与 PaymentLog/RefundOrder 一致。
 - **继承 `AuditableSoftDeletable`**：自动获得 `createdAt/updatedAt/createdBy/updatedBy/deleted`，无需自建审计字段。
@@ -34,7 +34,7 @@
 | 决策点 | 取值 | 理由 |
 |--------|------|------|
 | `result` 字段类型 | `String`（length 32，NOT NULL） | spec 未枚举 result 取值；用稳定 token（`SUCCESS`/`FAILED`），过滤友好、不 over-engineer 枚举（YAGNI）。语义＝「本次记录的操作是否完成成功」，非业务结果好坏（AUDIT_REJECT 仍记 SUCCESS＝拒绝动作已成功落库）。 |
-| `operatorId/Name/System` 可空 | 均可空 | CONTEXT.md：系统发起的动作 operatorId/Name 可空；operatorSystem 在无签名上下文（如调度）时也可空。 |
+| `operatorId/Name/System` 可空 | 均可空 | GLOSSARY.md：系统发起的动作 operatorId/Name 可空；operatorSystem 在无签名上下文（如调度）时也可空。 |
 | `record(...)` 方法名 | 保留 `record` | spec 明示；`record` 是 Java 受限标识符，**可作为方法名**（不可作为 record 类型名），javac 合法。 |
 | 列表返回类型 | `ApiResponse<PageResponse<OperationLogResponse>>` | 沿用本仓 controller 统一 `ApiResponse.ok(...)` 包装；PageResponse 为分页结构体。 |
 | 时间范围筛选 | 双字段 `createdAtStart`(GREATER_EQUAL) + `createdAtEnd`(LESS_EQUAL)，`propName="createdAt"` | 比单字段 BETWEEN 更显式可读，`createdAt` 继承自 `AuditableSoftDeletable`（`@MappedSuperclass`），Specification `root.get("createdAt")` 可用。 |
@@ -46,7 +46,7 @@
 src/main/resources/db/migration/
 └── V6__create_operation_logs.sql                      [新] 建表 + 索引
 
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── domain/
 │   ├── enums/
 │   │   ├── OperationLogTargetType.java                [新] 枚举 PAYMENT/REFUND
@@ -69,7 +69,7 @@ src/main/java/com/aieducenter/payment/
 └── endpoints/api/v1/
     └── OperationLogApiV1Controller.java               [新] GET /api/v1/operation-logs
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 ├── domain/aggregate/
 │   └── OperationLogTest.java                          [新] 聚合不变式（领域缝）
 └── application/
@@ -139,12 +139,12 @@ git commit -m "feat(payment): Flyway 迁移建表 pay_operation_logs（Operation
 ### Task 2: 领域层 — 枚举 + 错误码 + OperationLog 聚合 + 仓储 + 聚合测试
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/OperationLogTargetType.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/OperationType.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/aggregate/OperationLog.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/repository/OperationLogRepository.java`
-- Modify: `src/main/java/com/aieducenter/payment/domain/error/PaymentMessage.java`
-- Test: `src/test/java/com/aieducenter/payment/domain/aggregate/OperationLogTest.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/OperationLogTargetType.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/OperationType.java`
+- Create: `src/main/java/com/semgravio/payment/domain/aggregate/OperationLog.java`
+- Create: `src/main/java/com/semgravio/payment/domain/repository/OperationLogRepository.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/error/PaymentMessage.java`
+- Test: `src/test/java/com/semgravio/payment/domain/aggregate/OperationLogTest.java`
 
 **Interfaces:**
 - Produces（供后续 Task 消费）：
@@ -170,7 +170,7 @@ git commit -m "feat(payment): Flyway 迁移建表 pay_operation_logs（Operation
 - [ ] **Step 2: 创建枚举 `OperationLogTargetType`**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -213,7 +213,7 @@ public enum OperationLogTargetType implements BaseEnum<OperationLogTargetType> {
 - [ ] **Step 3: 创建枚举 `OperationType`**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -258,13 +258,13 @@ public enum OperationType implements BaseEnum<OperationType> {
 
 - [ ] **Step 4: 写失败测试（领域缝）**
 
-创建 `src/test/java/com/aieducenter/payment/domain/aggregate/OperationLogTest.java`：
+创建 `src/test/java/com/semgravio/payment/domain/aggregate/OperationLogTest.java`：
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
 import com.cartisan.core.exception.DomainException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -365,15 +365,15 @@ Expected: 编译失败（`OperationLog` 类不存在）。
 
 - [ ] **Step 6: 实现 `OperationLog` 聚合**
 
-创建 `src/main/java/com/aieducenter/payment/domain/aggregate/OperationLog.java`：
+创建 `src/main/java/com/semgravio/payment/domain/aggregate/OperationLog.java`：
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
 import cn.hutool.core.util.StrUtil;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.error.PaymentMessage;
 import com.cartisan.core.domain.AggregateRoot;
 import com.cartisan.core.stereotype.Aggregate;
 import com.cartisan.core.util.Assertions;
@@ -497,12 +497,12 @@ Expected: 6 个测试全部 PASS。
 
 - [ ] **Step 8: 创建仓储接口**
 
-创建 `src/main/java/com/aieducenter/payment/domain/repository/OperationLogRepository.java`：
+创建 `src/main/java/com/semgravio/payment/domain/repository/OperationLogRepository.java`：
 
 ```java
-package com.aieducenter.payment.domain.repository;
+package com.semgravio.payment.domain.repository;
 
-import com.aieducenter.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.aggregate.OperationLog;
 import com.cartisan.data.jpa.repository.BaseRepository;
 
 import java.util.List;
@@ -533,7 +533,7 @@ Expected: BUILD SUCCESS。
 - [ ] **Step 10: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/ src/test/java/com/aieducenter/payment/domain/aggregate/OperationLogTest.java
+git add src/main/java/com/semgravio/payment/domain/ src/test/java/com/semgravio/payment/domain/aggregate/OperationLogTest.java
 git commit -m "feat(payment): OperationLog 聚合 + 枚举 + 仓储 + 不变式测试"
 ```
 
@@ -542,11 +542,11 @@ git commit -m "feat(payment): OperationLog 聚合 + 枚举 + 仓储 + 不变式�
 ### Task 3: 应用层 — Query/Response DTO + Mapper + AppService + AppService 测试
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/query/OperationLogQuery.java`
-- Create: `src/main/java/com/aieducenter/payment/application/dto/response/OperationLogResponse.java`
-- Create: `src/main/java/com/aieducenter/payment/application/mapper/OperationLogMapper.java`
-- Create: `src/main/java/com/aieducenter/payment/application/OperationLogAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/OperationLogAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/query/OperationLogQuery.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/response/OperationLogResponse.java`
+- Create: `src/main/java/com/semgravio/payment/application/mapper/OperationLogMapper.java`
+- Create: `src/main/java/com/semgravio/payment/application/OperationLogAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/OperationLogAppServiceTest.java`
 
 **Interfaces:**
 - Consumes: Task 2 的 `OperationLog`、`OperationLogRepository`、两个枚举。
@@ -558,18 +558,18 @@ git commit -m "feat(payment): OperationLog 聚合 + 枚举 + 仓储 + 不变式�
 
 - [ ] **Step 1: 写失败测试（AppService 缝）**
 
-创建 `src/test/java/com/aieducenter/payment/application/OperationLogAppServiceTest.java`：
+创建 `src/test/java/com/semgravio/payment/application/OperationLogAppServiceTest.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.OperationLogQuery;
-import com.aieducenter.payment.application.dto.response.OperationLogResponse;
-import com.aieducenter.payment.application.mapper.OperationLogMapper;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.repository.OperationLogRepository;
+import com.semgravio.payment.application.dto.query.OperationLogQuery;
+import com.semgravio.payment.application.dto.response.OperationLogResponse;
+import com.semgravio.payment.application.mapper.OperationLogMapper;
+import com.semgravio.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.repository.OperationLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -691,13 +691,13 @@ Expected: 编译失败（`OperationLogAppService` / DTO / Mapper 不存在）。
 
 - [ ] **Step 3: 创建 `OperationLogQuery`**
 
-创建 `src/main/java/com/aieducenter/payment/application/dto/query/OperationLogQuery.java`：
+创建 `src/main/java/com/semgravio/payment/application/dto/query/OperationLogQuery.java`：
 
 ```java
-package com.aieducenter.payment.application.dto.query;
+package com.semgravio.payment.application.dto.query;
 
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
 import com.cartisan.data.jpa.specification.Condition;
 import com.cartisan.data.jpa.specification.ConditionType;
 
@@ -724,10 +724,10 @@ public record OperationLogQuery(
 
 - [ ] **Step 4: 创建 `OperationLogResponse`**
 
-创建 `src/main/java/com/aieducenter/payment/application/dto/response/OperationLogResponse.java`：
+创建 `src/main/java/com/semgravio/payment/application/dto/response/OperationLogResponse.java`：
 
 ```java
-package com.aieducenter.payment.application.dto.response;
+package com.semgravio.payment.application.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -755,13 +755,13 @@ public record OperationLogResponse(
 
 - [ ] **Step 5: 创建 `OperationLogMapper`**
 
-创建 `src/main/java/com/aieducenter/payment/application/mapper/OperationLogMapper.java`：
+创建 `src/main/java/com/semgravio/payment/application/mapper/OperationLogMapper.java`：
 
 ```java
-package com.aieducenter.payment.application.mapper;
+package com.semgravio.payment.application.mapper;
 
-import com.aieducenter.payment.application.dto.response.OperationLogResponse;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.application.dto.response.OperationLogResponse;
+import com.semgravio.payment.domain.aggregate.OperationLog;
 import com.cartisan.web.mapper.DomainMapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -785,18 +785,18 @@ public interface OperationLogMapper extends DomainMapper<OperationLog, Operation
 
 - [ ] **Step 6: 实现 `OperationLogAppService`**
 
-创建 `src/main/java/com/aieducenter/payment/application/OperationLogAppService.java`：
+创建 `src/main/java/com/semgravio/payment/application/OperationLogAppService.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.OperationLogQuery;
-import com.aieducenter.payment.application.dto.response.OperationLogResponse;
-import com.aieducenter.payment.application.mapper.OperationLogMapper;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.repository.OperationLogRepository;
+import com.semgravio.payment.application.dto.query.OperationLogQuery;
+import com.semgravio.payment.application.dto.response.OperationLogResponse;
+import com.semgravio.payment.application.mapper.OperationLogMapper;
+import com.semgravio.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.repository.OperationLogRepository;
 import com.cartisan.data.jpa.specification.ConditionSpecifications;
 import com.cartisan.web.response.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -874,7 +874,7 @@ Expected: 3 个测试全部 PASS。
 - [ ] **Step 8: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/ src/test/java/com/aieducenter/payment/application/OperationLogAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/ src/test/java/com/semgravio/payment/application/OperationLogAppServiceTest.java
 git commit -m "feat(payment): OperationLogAppService（record + list）+ DTO + Mapper + 缝测试"
 ```
 
@@ -883,7 +883,7 @@ git commit -m "feat(payment): OperationLogAppService（record + list）+ DTO + M
 ### Task 4: 端点 — `GET /api/v1/operation-logs`
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/endpoints/api/v1/OperationLogApiV1Controller.java`
+- Create: `src/main/java/com/semgravio/payment/endpoints/api/v1/OperationLogApiV1Controller.java`
 
 **Interfaces:**
 - Consumes: Task 3 的 `OperationLogAppService.list`、`OperationLogQuery`。
@@ -891,14 +891,14 @@ git commit -m "feat(payment): OperationLogAppService（record + list）+ DTO + M
 
 - [ ] **Step 1: 实现 Controller（薄委托，无独立控制器测试缝）**
 
-创建 `src/main/java/com/aieducenter/payment/endpoints/api/v1/OperationLogApiV1Controller.java`：
+创建 `src/main/java/com/semgravio/payment/endpoints/api/v1/OperationLogApiV1Controller.java`：
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.payment.application.OperationLogAppService;
-import com.aieducenter.payment.application.dto.query.OperationLogQuery;
-import com.aieducenter.payment.application.dto.response.OperationLogResponse;
+import com.semgravio.payment.application.OperationLogAppService;
+import com.semgravio.payment.application.dto.query.OperationLogQuery;
+import com.semgravio.payment.application.dto.response.OperationLogResponse;
 import com.cartisan.openapi.annotation.RequireSignature;
 import com.cartisan.web.response.ApiResponse;
 import com.cartisan.web.response.PageResponse;
@@ -941,7 +941,7 @@ Expected: BUILD SUCCESS。
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/OperationLogApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/OperationLogApiV1Controller.java
 git commit -m "feat(payment): GET /api/v1/operation-logs 端点（@RequireSignature 多条件分页）"
 ```
 
@@ -964,8 +964,8 @@ Expected: PASS（新代码遵循分层规则：领域层不依赖基础设施、
 Run: `mvn org.pitest:pitest-maven:mutationCoverage`
 Expected: BUILD SUCCESS，变异分数 ≥ 70%（pom `<mutationThreshold>70</mutationThreshold>`）。
 
-> **注意（pitest 配置现状）**：pom 当前 `<targetClasses>com.aieducenter.aieducenterpayment.*</targetClasses>` 与实际包 `com.aieducenter.payment.*` 不匹配，pitest 可能变异 0 个类（trivially 满足阈值但不验证任何代码）。
-> 若确认 0 变异：把 `<targetClasses>` 改为覆盖本 issue 新增类的精确范围（如追加 `<param>com.aieducenter.payment.application.OperationLogAppService</param>` 与 `<param>com.aieducenter.payment.domain.aggregate.OperationLog</param>`），重跑确认新增代码变异分数达标。**不**扩大到全 `payment.*`（既有类未经变异准备，可能拉低分数、超出本 issue 范围）。
+> **注意（pitest 配置现状）**：pom 当前 `<targetClasses>com.semgravio.semgraviopayment.*</targetClasses>` 与实际包 `com.semgravio.payment.*` 不匹配，pitest 可能变异 0 个类（trivially 满足阈值但不验证任何代码）。
+> 若确认 0 变异：把 `<targetClasses>` 改为覆盖本 issue 新增类的精确范围（如追加 `<param>com.semgravio.payment.application.OperationLogAppService</param>` 与 `<param>com.semgravio.payment.domain.aggregate.OperationLog</param>`），重跑确认新增代码变异分数达标。**不**扩大到全 `payment.*`（既有类未经变异准备，可能拉低分数、超出本 issue 范围）。
 
 - [ ] **Step 4: 收尾提交（若有 pitest 配置调整）**
 

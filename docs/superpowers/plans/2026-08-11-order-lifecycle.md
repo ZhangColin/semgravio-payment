@@ -13,16 +13,16 @@
 - 父 spec：Issue #8（实现规约，User Story 10「订单完整生命周期」）。
 - 本 issue：#14（T6 · 订单生命周期读模型）。
 - 依赖：#9（T1 · OperationLog 能力）——**代码层已落地**（聚合 / 仓储 `findByTargetNoOrderByCreatedAtDesc` / 枚举 / `V6__create_operation_logs.sql` 均在库），本计划直接消费。
-- 术语：`CONTEXT.md`（订单生命周期 = 两表合并的只读视图；PaymentLog / OperationLog 职责分离）。
+- 术语：`GLOSSARY.md`（订单生命周期 = 两表合并的只读视图；PaymentLog / OperationLog 职责分离）。
 - 决策：`docs/adr/0002-operation-log-separation.md`（不合表、合视图）、`docs/adr/0001-no-admin-state-mutation.md`（运营不施加状态，本端点只读）。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`。
 
 ## Global Constraints
 
 - **只读读模型**：`@Transactional(readOnly = true)`，全程不调用任何 `save` / 状态迁移方法，不改订单状态（ADR-0001、ADR-0002）。
-- **银行无关**（CONTEXT.md 不变式 5）：统一事件 DTO 不出现 ICBC / 具体银行硬编码；网关事件只透出 `bankCode` / `bankInterface` 通用列。
+- **银行无关**（GLOSSARY.md 不变式 5）：统一事件 DTO 不出现 ICBC / 具体银行硬编码；网关事件只透出 `bankCode` / `bankInterface` 通用列。
 - **复用既有查询**：不新增仓储方法、不新增迁移；`orderNo` 语义 = **支付订单号**（PaymentLog 按 `paymentOrderNo` 查，OperationLog 按 `targetNo` 查——支付/退款单号命名空间不同，`targetNo` 维度足够）。
-- **排序约定**：合并后按 `createdAt` **升序**（"从创建到终态"的时间线，CONTEXT.md · 订单生命周期）；相同 `createdAt` 时按 `id` 升序稳定排序（TSID 全局唯一且含时间序，跨表可比，保证确定性）。
+- **排序约定**：合并后按 `createdAt` **升序**（"从创建到终态"的时间线，GLOSSARY.md · 订单生命周期）；相同 `createdAt` 时按 `id` 升序稳定排序（TSID 全局唯一且含时间序，跨表可比，保证确定性）。
 - **DTO 只用 Record**；响应只暴露 DTO，不暴露聚合。
 - **Mapper 为手写 `@Component` 类**（非 MapStruct）：生命周期是**两源 → 一目标**的合并读模型，不适用 MapStruct `DomainMapper` 的单源 `convert` 模式；故 `application/mapper/OrderLifecycleMapper` 用普通类提供 `fromPaymentLog` / `fromOperationLog` 两法，由 AppService 注入。Mapper 不进 pitest 评分（属映射层，与 MapStruct 生成实现同等对待，见 pom 注释）。
 - **构造函数注入**（`@RequiredArgsConstructor`），禁止字段注入。
@@ -35,19 +35,19 @@
 | 决策点 | 取值 | 理由 |
 |--------|------|------|
 | `orderNo` 语义 | 支付订单号 | issue #14 明示「该订单的 PaymentLog（既有按单查询）」——既有按单查询即 `findByPaymentOrderNoOrderByCreatedAtDesc`。OperationLog 以 `targetNo=支付订单号` 关联（PAYMENT 类操作）。退款单号命名空间独立，无碰撞。 |
-| 排序方向 | `createdAt` **升序** | CONTEXT.md「从创建到终态的完整事件序列」——时间线按时间正序阅读最自然。仓储方法返回 DESC（列表场景约定），AppService 合并后**显式重排为升序**，不透传仓储顺序。 |
+| 排序方向 | `createdAt` **升序** | GLOSSARY.md「从创建到终态的完整事件序列」——时间线按时间正序阅读最自然。仓储方法返回 DESC（列表场景约定），AppService 合并后**显式重排为升序**，不透传仓储顺序。 |
 | 同时间稳定键 | `id` 升序 | 跨两表的 TSID 全局唯一、含时间序，可比；保证相同 `createdAt` 下输出确定（变异友好：可写同时间跨来源用例杀死「移除 thenComparing」变异）。 |
 | 是否分页 | 不分页，返回 `List` | 单订单事件序列有界（数十至数百条），生命周期是一次性"看全"视图，非海量分页列表（区别于 PaymentLog/OperationLog 的多条件分页端点）。 |
 | 来源标注 `source` 类型 | `String`（`"GATEWAY"`/`"OPERATION"`） | AC 明示 `GATEWAY`/`OPERATION` 字面值；用 String 避免枚举 Jackson 序列化歧义，与 PaymentLog.logType 的 String 约定一致。 |
 | Mapper 形态 | 手写 `@Component` 类（非 MapStruct 接口） | 两源 → 一目标不适用 MapStruct `DomainMapper<单源,单目标>`；手写两法 `fromPaymentLog` / `fromOperationLog` 最直接，且可被 Mockito mock，让 AppService 缝聚焦"合并排序"。 |
 | `outcome`（结果 token）统一 | GATEWAY：`success ? "SUCCESS" : "FAILED"`；OPERATION：取 `result` | 把两类来源的结果归一为 `SUCCESS`/`FAILED` 稳定 token，前端可统一渲染成败（银行无关，不暴露 returnCode 语义）。 |
 | 订单不存在是否 404 | **否**，返回空列表 | 读模型只合并两表记录；无事件则空序列是合法生命周期。避免引入 `PaymentOrderRepository` 依赖与「订单存在性」耦合（AC 未要求 404）。 |
-| pitest 范围 | 追加 `com.aieducenter.payment.application.OrderLifecycleAppService` | 沿用 pom 既有策略：仅精确覆盖有 Mockito 缝的查询应用服务；Mapper（映射层）与 Controller（薄委托）不进评分。 |
+| pitest 范围 | 追加 `com.semgravio.payment.application.OrderLifecycleAppService` | 沿用 pom 既有策略：仅精确覆盖有 Mockito 缝的查询应用服务；Mapper（映射层）与 Controller（薄委托）不进评分。 |
 
 ## File Structure
 
 ```
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── application/
 │   ├── dto/
 │   │   └── response/
@@ -58,7 +58,7 @@ src/main/java/com/aieducenter/payment/
 └── endpoints/api/v1/
     └── OrderLifecycleApiV1Controller.java            [新] GET /api/v1/orders/{orderNo}/lifecycle
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 └── application/
     └── OrderLifecycleAppServiceTest.java             [新] Mockito 缝：合并排序逻辑
 
@@ -72,10 +72,10 @@ pom.xml                                               [改] pitest targetClasses
 ### Task 1: 应用层读模型 — TDD（Response DTO + Mapper + AppService + 缝测试）
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/response/OrderLifecycleResponse.java`
-- Create: `src/main/java/com/aieducenter/payment/application/mapper/OrderLifecycleMapper.java`
-- Create: `src/main/java/com/aieducenter/payment/application/OrderLifecycleAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/OrderLifecycleAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/response/OrderLifecycleResponse.java`
+- Create: `src/main/java/com/semgravio/payment/application/mapper/OrderLifecycleMapper.java`
+- Create: `src/main/java/com/semgravio/payment/application/OrderLifecycleAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/OrderLifecycleAppServiceTest.java`
 
 **Interfaces:**
 - Consumes（既有，#9 与 PaymentLog）：
@@ -91,19 +91,19 @@ pom.xml                                               [改] pitest targetClasses
 
 - [ ] **Step 1: 写失败测试（AppService Mockito 缝）**
 
-创建 `src/test/java/com/aieducenter/payment/application/OrderLifecycleAppServiceTest.java`：
+创建 `src/test/java/com/semgravio/payment/application/OrderLifecycleAppServiceTest.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.response.OrderLifecycleResponse;
-import com.aieducenter.payment.application.mapper.OrderLifecycleMapper;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.repository.OperationLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.application.dto.response.OrderLifecycleResponse;
+import com.semgravio.payment.application.mapper.OrderLifecycleMapper;
+import com.semgravio.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.repository.OperationLogRepository;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -247,7 +247,7 @@ class OrderLifecycleAppServiceTest {
 }
 ```
 
-> 说明：`PaymentLog` 构造里 `bankCode="ICBC"` 仅为构造一个**合法实例**喂给被 mock 的 Mapper（Mapper 不会真正读它）；DTO 与排序逻辑全程**银行无关**（CONTEXT.md 不变式 5）。生产代码与响应字段无任何 ICBC 硬编码。
+> 说明：`PaymentLog` 构造里 `bankCode="ICBC"` 仅为构造一个**合法实例**喂给被 mock 的 Mapper（Mapper 不会真正读它）；DTO 与排序逻辑全程**银行无关**（GLOSSARY.md 不变式 5）。生产代码与响应字段无任何 ICBC 硬编码。
 
 - [ ] **Step 2: 运行测试确认失败（DTO / Mapper / AppService 尚不存在）**
 
@@ -256,10 +256,10 @@ Expected: **编译失败**——`OrderLifecycleResponse` / `OrderLifecycleMapper
 
 - [ ] **Step 3: 创建统一事件 DTO `OrderLifecycleResponse`**
 
-创建 `src/main/java/com/aieducenter/payment/application/dto/response/OrderLifecycleResponse.java`：
+创建 `src/main/java/com/semgravio/payment/application/dto/response/OrderLifecycleResponse.java`：
 
 ```java
-package com.aieducenter.payment.application.dto.response;
+package com.semgravio.payment.application.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -268,10 +268,10 @@ import java.time.LocalDateTime;
  *
  * <p>把 {@code PaymentLog}（网关交互，来源 GATEWAY）与 {@code OperationLog}（行为者操作，来源 OPERATION）
  * 按 {@code createdAt} 合并后的统一事件序列项。供客诉排查与运营查看「这单经历了什么」
- * （CONTEXT.md · 订单生命周期；ADR-0002 · 不合表、合视图）。只读、不写库。</p>
+ * （GLOSSARY.md · 订单生命周期；ADR-0002 · 不合表、合视图）。只读、不写库。</p>
  *
  * <p>字段为跨来源的语义抽象：来源标签 + 动作 + 结果 + 执行方 + 补充说明，两类来源各自填值。
- * 银行无关（CONTEXT.md 不变式 5）——网关事件只透出 bankCode/bankInterface 通用列。</p>
+ * 银行无关（GLOSSARY.md 不变式 5）——网关事件只透出 bankCode/bankInterface 通用列。</p>
  *
  * @param id              源记录主键（PaymentLog.id / OperationLog.id；同时间排序的稳定键）
  * @param source          来源标签：{@code "GATEWAY"}（网关交互）/ {@code "OPERATION"}（行为者操作）
@@ -299,14 +299,14 @@ public record OrderLifecycleResponse(
 
 - [ ] **Step 4: 创建手写 Mapper `OrderLifecycleMapper`**
 
-创建 `src/main/java/com/aieducenter/payment/application/mapper/OrderLifecycleMapper.java`：
+创建 `src/main/java/com/semgravio/payment/application/mapper/OrderLifecycleMapper.java`：
 
 ```java
-package com.aieducenter.payment.application.mapper;
+package com.semgravio.payment.application.mapper;
 
-import com.aieducenter.payment.application.dto.response.OrderLifecycleResponse;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.application.dto.response.OrderLifecycleResponse;
+import com.semgravio.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
 import org.springframework.stereotype.Component;
 
 /**
@@ -314,9 +314,9 @@ import org.springframework.stereotype.Component;
  *
  * <p>生命周期是<b>两源 → 一目标</b>的合并读模型，不适用 {@code DomainMapper<单源, 单目标>} 的 MapStruct
  * {@code convert} 模式。故以普通 {@code @Component} 类提供两个来源各自的映射法，由
- * {@link com.aieducenter.payment.application.OrderLifecycleAppService} 注入并按来源分别调用。</p>
+ * {@link com.semgravio.payment.application.OrderLifecycleAppService} 注入并按来源分别调用。</p>
  *
- * <p>银行无关（CONTEXT.md 不变式 5）：网关事件只读 PaymentLog 的通用列（bankCode/bankInterface/success/returnMsg/errorMessage），
+ * <p>银行无关（GLOSSARY.md 不变式 5）：网关事件只读 PaymentLog 的通用列（bankCode/bankInterface/success/returnMsg/errorMessage），
  * 无 ICBC 硬编码。</p>
  */
 @Component
@@ -357,17 +357,17 @@ public class OrderLifecycleMapper {
 
 - [ ] **Step 5: 实现 `OrderLifecycleAppService`**
 
-创建 `src/main/java/com/aieducenter/payment/application/OrderLifecycleAppService.java`：
+创建 `src/main/java/com/semgravio/payment/application/OrderLifecycleAppService.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.response.OrderLifecycleResponse;
-import com.aieducenter.payment.application.mapper.OrderLifecycleMapper;
-import com.aieducenter.payment.domain.aggregate.OperationLog;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.repository.OperationLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.application.dto.response.OrderLifecycleResponse;
+import com.semgravio.payment.application.mapper.OrderLifecycleMapper;
+import com.semgravio.payment.domain.aggregate.OperationLog;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.repository.OperationLogRepository;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -381,9 +381,9 @@ import java.util.List;
  *
  * <p>按 {@code orderNo}（支付订单号）合并该订单的 PaymentLog（既有按单查询）与 OperationLog（T1 的按 targetNo 查询），
  * 各自映射为统一事件后按 {@code createdAt} 升序、{@code id} 升序稳定排序返回——「这单从创建到终态经历了什么」
- * （CONTEXT.md · 订单生命周期；ADR-0002 · 不合表、合视图）。</p>
+ * （GLOSSARY.md · 订单生命周期；ADR-0002 · 不合表、合视图）。</p>
  *
- * <p><b>只读</b>：{@code @Transactional(readOnly = true)}，不落库、不改订单状态（ADR-0001）。银行无关（CONTEXT.md 不变式 5）。</p>
+ * <p><b>只读</b>：{@code @Transactional(readOnly = true)}，不落库、不改订单状态（ADR-0001）。银行无关（GLOSSARY.md 不变式 5）。</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -430,10 +430,10 @@ Expected: **3 个测试全部 PASS**（合并升序、同时间 id 稳定、空�
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/response/OrderLifecycleResponse.java \
-        src/main/java/com/aieducenter/payment/application/mapper/OrderLifecycleMapper.java \
-        src/main/java/com/aieducenter/payment/application/OrderLifecycleAppService.java \
-        src/test/java/com/aieducenter/payment/application/OrderLifecycleAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/response/OrderLifecycleResponse.java \
+        src/main/java/com/semgravio/payment/application/mapper/OrderLifecycleMapper.java \
+        src/main/java/com/semgravio/payment/application/OrderLifecycleAppService.java \
+        src/test/java/com/semgravio/payment/application/OrderLifecycleAppServiceTest.java
 git commit -m "feat(payment): OrderLifecycleAppService（订单生命周期读模型：两源合并升序）+ DTO + Mapper + 缝测试"
 ```
 
@@ -442,7 +442,7 @@ git commit -m "feat(payment): OrderLifecycleAppService（订单生命周期读�
 ### Task 2: 端点 — `GET /api/v1/orders/{orderNo}/lifecycle`
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java`
+- Create: `src/main/java/com/semgravio/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java`
 
 **Interfaces:**
 - Consumes: Task 1 的 `OrderLifecycleAppService.getLifecycle(String) → List<OrderLifecycleResponse>`。
@@ -450,13 +450,13 @@ git commit -m "feat(payment): OrderLifecycleAppService（订单生命周期读�
 
 - [ ] **Step 1: 实现 Controller（薄委托，无独立控制器测试缝）**
 
-创建 `src/main/java/com/aieducenter/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java`：
+创建 `src/main/java/com/semgravio/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java`：
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.payment.application.OrderLifecycleAppService;
-import com.aieducenter.payment.application.dto.response.OrderLifecycleResponse;
+import com.semgravio.payment.application.OrderLifecycleAppService;
+import com.semgravio.payment.application.dto.response.OrderLifecycleResponse;
 import com.cartisan.openapi.annotation.RequireSignature;
 import com.cartisan.web.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -498,7 +498,7 @@ Expected: BUILD SUCCESS。
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/OrderLifecycleApiV1Controller.java
 git commit -m "feat(payment): GET /api/v1/orders/{orderNo}/lifecycle 端点（@RequireSignature 两源合并事件序列）"
 ```
 
@@ -531,13 +531,13 @@ Expected: PASS（新代码遵循分层规则：应用层依赖领域层、Contro
 
 ```xml
                     <targetClasses>
-                        <param>com.aieducenter.payment.domain.aggregate.OperationLog</param>
-                        <param>com.aieducenter.payment.application.OperationLogAppService</param>
-                        <param>com.aieducenter.payment.application.PaymentOrderQueryAppService</param>
-                        <param>com.aieducenter.payment.domain.aggregate.RefundOrder</param>
-                        <param>com.aieducenter.payment.application.RefundOrderQueryAppService</param>
-                        <param>com.aieducenter.payment.application.PaymentLogQueryAppService</param>
-                        <param>com.aieducenter.payment.application.OrderLifecycleAppService</param>
+                        <param>com.semgravio.payment.domain.aggregate.OperationLog</param>
+                        <param>com.semgravio.payment.application.OperationLogAppService</param>
+                        <param>com.semgravio.payment.application.PaymentOrderQueryAppService</param>
+                        <param>com.semgravio.payment.domain.aggregate.RefundOrder</param>
+                        <param>com.semgravio.payment.application.RefundOrderQueryAppService</param>
+                        <param>com.semgravio.payment.application.PaymentLogQueryAppService</param>
+                        <param>com.semgravio.payment.application.OrderLifecycleAppService</param>
                     </targetClasses>
 ```
 

@@ -3,12 +3,12 @@ server:
 
 spring:
   application:
-    name: aieducenter-payment
+    name: semgravio-payment
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
   flyway:
     enabled: true
-    table: aieducenter-payment_flyway_schema_history
+    table: semgravio-payment_flyway_schema_history
     baseline-on-migrate: true
     baseline-version: "0"
     locations: classpath:db/migration

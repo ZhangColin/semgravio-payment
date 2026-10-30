@@ -52,7 +52,7 @@
 ## Task 1: 添加签名验证错误码
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/openapi/domain/error/OpenApiMessage.java`
+- Modify: `src/main/java/com/semgravio/openapi/domain/error/OpenApiMessage.java`
 
 - [ ] **Step 1: 在 OpenApiMessage 枚举中添加签名验证错误码**
 
@@ -76,7 +76,7 @@ Expected: BUILD SUCCESS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/domain/error/OpenApiMessage.java
+git add src/main/java/com/semgravio/openapi/domain/error/OpenApiMessage.java
 git commit -m "feat(openapi): add signature verification error codes to OpenApiMessage"
 ```
 
@@ -85,13 +85,13 @@ git commit -m "feat(openapi): add signature verification error codes to OpenApiM
 ## Task 2: 创建领域端口接口
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/openapi/domain/port/SignatureCalculator.java`
-- Create: `src/main/java/com/aieducenter/openapi/domain/port/NonceRepository.java`
+- Create: `src/main/java/com/semgravio/openapi/domain/port/SignatureCalculator.java`
+- Create: `src/main/java/com/semgravio/openapi/domain/port/NonceRepository.java`
 
 - [ ] **Step 1: 创建 SignatureCalculator 端口**
 
 ```java
-package com.aieducenter.openapi.domain.port;
+package com.semgravio.openapi.domain.port;
 
 /**
  * 签名计算端口
@@ -111,7 +111,7 @@ public interface SignatureCalculator {
 - [ ] **Step 2: 创建 NonceRepository 端口**
 
 ```java
-package com.aieducenter.openapi.domain.port;
+package com.semgravio.openapi.domain.port;
 
 /**
  * Nonce 存储端口（防重放）
@@ -135,7 +135,7 @@ Expected: BUILD SUCCESS
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/domain/port/
+git add src/main/java/com/semgravio/openapi/domain/port/
 git commit -m "feat(openapi): add SignatureCalculator and NonceRepository port interfaces"
 ```
 
@@ -144,19 +144,19 @@ git commit -m "feat(openapi): add SignatureCalculator and NonceRepository port i
 ## Task 3: SignatureService 领域服务 - TDD
 
 **Files:**
-- Test: `src/test/java/com/aieducenter/openapi/domain/service/SignatureServiceTest.java`
-- Create: `src/main/java/com/aieducenter/openapi/domain/service/SignatureService.java`
+- Test: `src/test/java/com/semgravio/openapi/domain/service/SignatureServiceTest.java`
+- Create: `src/main/java/com/semgravio/openapi/domain/service/SignatureService.java`
 
 - [ ] **Step 1: 编写 SignatureServiceTest 测试类**
 
 ```java
-package com.aieducenter.openapi.domain.service;
+package com.semgravio.openapi.domain.service;
 
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.enums.ApiKeyStatus;
-import com.aieducenter.openapi.domain.error.OpenApiMessage;
-import com.aieducenter.openapi.domain.port.NonceRepository;
-import com.aieducenter.openapi.domain.port.SignatureCalculator;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.enums.ApiKeyStatus;
+import com.semgravio.openapi.domain.error.OpenApiMessage;
+import com.semgravio.openapi.domain.port.NonceRepository;
+import com.semgravio.openapi.domain.port.SignatureCalculator;
 import com.cartisan.core.exception.ApplicationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -367,12 +367,12 @@ Expected: FAIL (class not found)
 - [ ] **Step 3: 实现 SignatureService**
 
 ```java
-package com.aieducenter.openapi.domain.service;
+package com.semgravio.openapi.domain.service;
 
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.error.OpenApiMessage;
-import com.aieducenter.openapi.domain.port.NonceRepository;
-import com.aieducenter.openapi.domain.port.SignatureCalculator;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.error.OpenApiMessage;
+import com.semgravio.openapi.domain.port.NonceRepository;
+import com.semgravio.openapi.domain.port.SignatureCalculator;
 import com.cartisan.core.exception.ApplicationException;
 import com.cartisan.core.stereotype.DomainService;
 import lombok.RequiredArgsConstructor;
@@ -471,8 +471,8 @@ Expected: All tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/domain/service/SignatureService.java \
-        src/test/java/com/aieducenter/openapi/domain/service/SignatureServiceTest.java
+git add src/main/java/com/semgravio/openapi/domain/service/SignatureService.java \
+        src/test/java/com/semgravio/openapi/domain/service/SignatureServiceTest.java
 git commit -m "feat(openapi): implement SignatureService domain service with HMAC-SHA256 verification"
 ```
 
@@ -481,13 +481,13 @@ git commit -m "feat(openapi): implement SignatureService domain service with HMA
 ## Task 4: HmacSha256SignatureCalculator - TDD
 
 **Files:**
-- Test: `src/test/java/com/aieducenter/openapi/infrastructure/signature/HmacSha256SignatureCalculatorTest.java`
-- Create: `src/main/java/com/aieducenter/openapi/infrastructure/signature/HmacSha256SignatureCalculator.java`
+- Test: `src/test/java/com/semgravio/openapi/infrastructure/signature/HmacSha256SignatureCalculatorTest.java`
+- Create: `src/main/java/com/semgravio/openapi/infrastructure/signature/HmacSha256SignatureCalculator.java`
 
 - [ ] **Step 1: 编写测试**
 
 ```java
-package com.aieducenter.openapi.infrastructure.signature;
+package com.semgravio.openapi.infrastructure.signature;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -552,9 +552,9 @@ Expected: FAIL
 - [ ] **Step 3: 实现 HmacSha256SignatureCalculator**
 
 ```java
-package com.aieducenter.openapi.infrastructure.signature;
+package com.semgravio.openapi.infrastructure.signature;
 
-import com.aieducenter.openapi.domain.port.SignatureCalculator;
+import com.semgravio.openapi.domain.port.SignatureCalculator;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.Mac;
@@ -595,8 +595,8 @@ Expected: All tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/infrastructure/signature/HmacSha256SignatureCalculator.java \
-        src/test/java/com/aieducenter/openapi/infrastructure/signature/HmacSha256SignatureCalculatorTest.java
+git add src/main/java/com/semgravio/openapi/infrastructure/signature/HmacSha256SignatureCalculator.java \
+        src/test/java/com/semgravio/openapi/infrastructure/signature/HmacSha256SignatureCalculatorTest.java
 git commit -m "feat(openapi): implement HmacSha256SignatureCalculator"
 ```
 
@@ -605,13 +605,13 @@ git commit -m "feat(openapi): implement HmacSha256SignatureCalculator"
 ## Task 5: RedisNonceRepository - TDD
 
 **Files:**
-- Test: `src/test/java/com/aieducenter/openapi/infrastructure/redis/RedisNonceRepositoryTest.java`
-- Create: `src/main/java/com/aieducenter/openapi/infrastructure/redis/RedisNonceRepository.java`
+- Test: `src/test/java/com/semgravio/openapi/infrastructure/redis/RedisNonceRepositoryTest.java`
+- Create: `src/main/java/com/semgravio/openapi/infrastructure/redis/RedisNonceRepository.java`
 
 - [ ] **Step 1: 编写测试**
 
 ```java
-package com.aieducenter.openapi.infrastructure.redis;
+package com.semgravio.openapi.infrastructure.redis;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -689,9 +689,9 @@ Expected: FAIL
 - [ ] **Step 3: 实现 RedisNonceRepository**
 
 ```java
-package com.aieducenter.openapi.infrastructure.redis;
+package com.semgravio.openapi.infrastructure.redis;
 
-import com.aieducenter.openapi.domain.port.NonceRepository;
+import com.semgravio.openapi.domain.port.NonceRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -732,8 +732,8 @@ Expected: All tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/infrastructure/redis/RedisNonceRepository.java \
-        src/test/java/com/aieducenter/openapi/infrastructure/redis/RedisNonceRepositoryTest.java
+git add src/main/java/com/semgravio/openapi/infrastructure/redis/RedisNonceRepository.java \
+        src/test/java/com/semgravio/openapi/infrastructure/redis/RedisNonceRepositoryTest.java
 git commit -m "feat(openapi): implement RedisNonceRepository with SETNX for anti-replay"
 ```
 
@@ -742,18 +742,18 @@ git commit -m "feat(openapi): implement RedisNonceRepository with SETNX for anti
 ## Task 6: ApiKeyQueryAppService 应用服务 - TDD
 
 **Files:**
-- Test: `src/test/java/com/aieducenter/openapi/application/ApiKeyQueryAppServiceTest.java`
-- Create: `src/main/java/com/aieducenter/openapi/application/ApiKeyQueryAppService.java`
+- Test: `src/test/java/com/semgravio/openapi/application/ApiKeyQueryAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/openapi/application/ApiKeyQueryAppService.java`
 
 - [ ] **Step 1: 编写测试**
 
 ```java
-package com.aieducenter.openapi.application;
+package com.semgravio.openapi.application;
 
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.enums.ApiKeyStatus;
-import com.aieducenter.openapi.domain.error.OpenApiMessage;
-import com.aieducenter.openapi.domain.repository.ApiKeyRepository;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.enums.ApiKeyStatus;
+import com.semgravio.openapi.domain.error.OpenApiMessage;
+import com.semgravio.openapi.domain.repository.ApiKeyRepository;
 import com.cartisan.core.exception.ApplicationException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -846,12 +846,12 @@ Expected: FAIL
 - [ ] **Step 3: 实现 ApiKeyQueryAppService**
 
 ```java
-package com.aieducenter.openapi.application;
+package com.semgravio.openapi.application;
 
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.enums.ApiKeyStatus;
-import com.aieducenter.openapi.domain.error.OpenApiMessage;
-import com.aieducenter.openapi.domain.repository.ApiKeyRepository;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.enums.ApiKeyStatus;
+import com.semgravio.openapi.domain.error.OpenApiMessage;
+import com.semgravio.openapi.domain.repository.ApiKeyRepository;
 import com.cartisan.core.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -892,8 +892,8 @@ Expected: All tests PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/application/ApiKeyQueryAppService.java \
-        src/test/java/com/aieducenter/openapi/application/ApiKeyQueryAppServiceTest.java
+git add src/main/java/com/semgravio/openapi/application/ApiKeyQueryAppService.java \
+        src/test/java/com/semgravio/openapi/application/ApiKeyQueryAppServiceTest.java
 git commit -m "feat(openapi): add ApiKeyQueryAppService for signature verification"
 ```
 
@@ -902,17 +902,17 @@ git commit -m "feat(openapi): add ApiKeyQueryAppService for signature verificati
 ## Task 7: Web 层 - 注解 + Filter + 拦截器 + 配置
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/openapi/web/RequireSignature.java`
-- Create: `src/main/java/com/aieducenter/openapi/web/CachingRequestBodyFilter.java`
-- Create: `src/main/java/com/aieducenter/openapi/web/SignatureVerificationInterceptor.java`
-- Create: `src/main/java/com/aieducenter/openapi/web/OpenApiSignatureConfig.java`
-- Test: `src/test/java/com/aieducenter/openapi/web/SignatureVerificationInterceptorTest.java`
-- Modify: `src/main/java/com/aieducenter/config/WebConfig.java`
+- Create: `src/main/java/com/semgravio/openapi/web/RequireSignature.java`
+- Create: `src/main/java/com/semgravio/openapi/web/CachingRequestBodyFilter.java`
+- Create: `src/main/java/com/semgravio/openapi/web/SignatureVerificationInterceptor.java`
+- Create: `src/main/java/com/semgravio/openapi/web/OpenApiSignatureConfig.java`
+- Test: `src/test/java/com/semgravio/openapi/web/SignatureVerificationInterceptorTest.java`
+- Modify: `src/main/java/com/semgravio/config/WebConfig.java`
 
 - [ ] **Step 1: 创建 @RequireSignature 注解**
 
 ```java
-package com.aieducenter.openapi.web;
+package com.semgravio.openapi.web;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -931,7 +931,7 @@ public @interface RequireSignature {
 - [ ] **Step 2: 创建配置属性类 OpenApiSignatureConfig**
 
 ```java
-package com.aieducenter.openapi.web;
+package com.semgravio.openapi.web;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -967,7 +967,7 @@ public class OpenApiSignatureConfig {
 - [ ] **Step 3: 创建 CachingRequestBodyFilter**
 
 ```java
-package com.aieducenter.openapi.web;
+package com.semgravio.openapi.web;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -1062,12 +1062,12 @@ public class CachingRequestBodyFilter implements Filter {
 - [ ] **Step 4: 创建 SignatureVerificationInterceptor**
 
 ```java
-package com.aieducenter.openapi.web;
+package com.semgravio.openapi.web;
 
-import com.aieducenter.openapi.application.ApiKeyQueryAppService;
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.error.OpenApiMessage;
-import com.aieducenter.openapi.domain.service.SignatureService;
+import com.semgravio.openapi.application.ApiKeyQueryAppService;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.error.OpenApiMessage;
+import com.semgravio.openapi.domain.service.SignatureService;
 import com.cartisan.core.exception.ApplicationException;
 import com.cartisan.web.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -1201,13 +1201,13 @@ public class SignatureVerificationInterceptor implements HandlerInterceptor {
 - [ ] **Step 5: 编写 Interceptor 测试**
 
 ```java
-package com.aieducenter.openapi.web;
+package com.semgravio.openapi.web;
 
-import com.aieducenter.openapi.application.ApiKeyQueryAppService;
-import com.aieducenter.openapi.domain.aggregate.ApiKey;
-import com.aieducenter.openapi.domain.enums.ApiKeyStatus;
-import com.aieducenter.openapi.domain.service.SignatureService;
-import com.aieducenter.openapi.web.CachingRequestBodyFilter.CachedBodyHttpServletRequest;
+import com.semgravio.openapi.application.ApiKeyQueryAppService;
+import com.semgravio.openapi.domain.aggregate.ApiKey;
+import com.semgravio.openapi.domain.enums.ApiKeyStatus;
+import com.semgravio.openapi.domain.service.SignatureService;
+import com.semgravio.openapi.web.CachingRequestBodyFilter.CachedBodyHttpServletRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1364,9 +1364,9 @@ Expected: All tests PASS
 在现有 `WebConfig.java` 中添加 `WebMvcConfigurer` 实现：
 
 ```java
-package com.aieducenter.config;
+package com.semgravio.config;
 
-import com.aieducenter.openapi.web.SignatureVerificationInterceptor;
+import com.semgravio.openapi.web.SignatureVerificationInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -1416,9 +1416,9 @@ Expected: BUILD SUCCESS
 - [ ] **Step 9: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/openapi/web/ \
-        src/test/java/com/aieducenter/openapi/web/ \
-        src/main/java/com/aieducenter/config/WebConfig.java
+git add src/main/java/com/semgravio/openapi/web/ \
+        src/test/java/com/semgravio/openapi/web/ \
+        src/main/java/com/semgravio/config/WebConfig.java
 git commit -m "feat(openapi): add @RequireSignature annotation, CachingRequestBodyFilter, SignatureVerificationInterceptor"
 ```
 
@@ -1427,8 +1427,8 @@ git commit -m "feat(openapi): add @RequireSignature annotation, CachingRequestBo
 ## Task 8: 集成 - 改造 Controller + 配置
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java`
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java`
 - Modify: `src/main/resources/application-local.yml`
 
 - [ ] **Step 1: 改造 PaymentApiV1Controller**
@@ -1436,12 +1436,12 @@ git commit -m "feat(openapi): add @RequireSignature annotation, CachingRequestBo
 移除 `ApiKeyManagementAppService` 依赖和 `@RequestHeader("X-API-KEY")`，改用 `@RequireSignature`：
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.openapi.web.RequireSignature;
-import com.aieducenter.payment.application.PaymentAppService;
-import com.aieducenter.payment.application.dto.command.CreatePaymentCommand;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.openapi.web.RequireSignature;
+import com.semgravio.payment.application.PaymentAppService;
+import com.semgravio.payment.application.dto.command.CreatePaymentCommand;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
 import com.cartisan.web.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -1497,13 +1497,13 @@ public class PaymentApiV1Controller {
 - [ ] **Step 2: 改造 RefundApiV1Controller**
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.openapi.web.RequireSignature;
-import com.aieducenter.payment.application.RefundAppService;
-import com.aieducenter.payment.application.dto.command.AuditRefundCommand;
-import com.aieducenter.payment.application.dto.command.CreateRefundCommand;
-import com.aieducenter.payment.application.dto.response.RefundOrderResponse;
+import com.semgravio.openapi.web.RequireSignature;
+import com.semgravio.payment.application.RefundAppService;
+import com.semgravio.payment.application.dto.command.AuditRefundCommand;
+import com.semgravio.payment.application.dto.command.CreateRefundCommand;
+import com.semgravio.payment.application.dto.response.RefundOrderResponse;
 import com.cartisan.web.response.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -1583,8 +1583,8 @@ Expected: All tests PASS
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java \
-        src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java \
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java \
+        src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java \
         src/main/resources/application-local.yml
 git commit -m "feat(payment): integrate @RequireSignature into Payment and Refund controllers"
 ```

@@ -13,8 +13,8 @@
 ## Project Overview
 
 ### Contexts
-1. **Security Context** (`com.aieducenter.security`) - API Key management, RSA2 signature generation/validation, permission control
-2. **Payment Context** (`com.aieducenter.payment`) - Payment orders, refund orders with approval workflow, payment logs, ICBC adapter
+1. **Security Context** (`com.semgravio.security`) - API Key management, RSA2 signature generation/validation, permission control
+2. **Payment Context** (`com.semgravio.payment`) - Payment orders, refund orders with approval workflow, payment logs, ICBC adapter
 
 ### Key Design Decisions
 - All refunds require approval (audit workflow)
@@ -29,7 +29,7 @@
 ## File Structure
 
 ```
-com.aieducenter/
+com.semgravio/
 ├── security/
 │   ├── package-info.java
 │   ├── domain/
@@ -128,9 +128,9 @@ com.aieducenter/
 ### Task 1: Initialize Security Context Structure
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/security/package-info.java`
-- Create: `src/main/java/com/aieducenter/security/domain/enums/ApiKeyStatus.java`
-- Create: `src/main/java/com/aieducenter/security/domain/error/SecurityMessage.java`
+- Create: `src/main/java/com/semgravio/security/package-info.java`
+- Create: `src/main/java/com/semgravio/security/domain/enums/ApiKeyStatus.java`
+- Create: `src/main/java/com/semgravio/security/domain/error/SecurityMessage.java`
 
 **Step 1: Create package-info for Security Context**
 
@@ -159,7 +159,7 @@ com.aieducenter/
  * @since 1.0.0
  */
 @BoundedContext(name = "Security", subDomain = SubDomain.SUPPORTING)
-package com.aieducenter.security;
+package com.semgravio.security;
 
 import com.cartisan.core.stereotype.BoundedContext;
 import com.cartisan.core.stereotype.SubDomain;
@@ -168,7 +168,7 @@ import com.cartisan.core.stereotype.SubDomain;
 **Step 2: Create ApiKeyStatus enum**
 
 ```java
-package com.aieducenter.security.domain.enums;
+package com.semgravio.security.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -208,7 +208,7 @@ public enum ApiKeyStatus implements BaseEnum<ApiKeyStatus> {
 **Step 3: Create SecurityMessage error codes**
 
 ```java
-package com.aieducenter.security.domain.error;
+package com.semgravio.security.domain.error;
 
 import com.cartisan.core.exception.CodeMessage;
 
@@ -260,17 +260,17 @@ public enum SecurityMessage implements CodeMessage {
 ### Task 2: Initialize Payment Context Structure
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/package-info.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/PaymentStatus.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/RefundStatus.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/BusinessType.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/PaymentMethod.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/error/PaymentMessage.java`
+- Create: `src/main/java/com/semgravio/payment/package-info.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/PaymentStatus.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/RefundStatus.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/BusinessType.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/PaymentMethod.java`
+- Create: `src/main/java/com/semgravio/payment/domain/error/PaymentMessage.java`
 
 **Step 1: Create PaymentStatus enum with timestamp transitions**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -317,7 +317,7 @@ public enum PaymentStatus implements BaseEnum<PaymentStatus> {
 **Step 2: Create RefundStatus enum with approval workflow**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -365,7 +365,7 @@ public enum RefundStatus implements BaseEnum<RefundStatus> {
 **Step 3: Create BusinessType enum**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -407,7 +407,7 @@ public enum BusinessType implements BaseEnum<BusinessType> {
 **Step 4: Create PaymentMethod enum**
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -448,7 +448,7 @@ public enum PaymentMethod implements BaseEnum<PaymentMethod> {
 **Step 5: Create PaymentMessage error codes**
 
 ```java
-package com.aieducenter.payment.domain.error;
+package com.semgravio.payment.domain.error;
 
 import com.cartisan.core.exception.CodeMessage;
 
@@ -674,16 +674,16 @@ CREATE INDEX idx_payment_logs_created_at ON payment_logs(created_at) WHERE delet
 ### Task 4: Implement ApiKey Aggregate
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/security/domain/aggregate/ApiKey.java`
+- Create: `src/main/java/com/semgravio/security/domain/aggregate/ApiKey.java`
 
 **Step 1: Write ApiKey aggregate with validation**
 
 ```java
-package com.aieducenter.security.domain.aggregate;
+package com.semgravio.security.domain.aggregate;
 
 import cn.hutool.core.util.StrUtil;
-import com.aieducenter.security.domain.enums.ApiKeyStatus;
-import com.aieducenter.security.domain.error.SecurityMessage;
+import com.semgravio.security.domain.enums.ApiKeyStatus;
+import com.semgravio.security.domain.error.SecurityMessage;
 import com.cartisan.core.exception.ApplicationException;
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.core.stereotype.Aggregate;
@@ -821,18 +821,18 @@ Expected: Compilation successful
 ### Task 5: Implement PaymentOrder Aggregate
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java`
+- Create: `src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java`
 
 **Step 1: Write PaymentOrder aggregate with business methods**
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
 import cn.hutool.core.util.StrUtil;
-import com.aieducenter.payment.domain.enums.BusinessType;
-import com.aieducenter.payment.domain.enums.PaymentMethod;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.enums.BusinessType;
+import com.semgravio.payment.domain.enums.PaymentMethod;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.error.PaymentMessage;
 import com.cartisan.core.exception.DomainException;
 import com.cartisan.core.stereotype.Aggregate;
 import com.cartisan.core.util.Assertions;
@@ -1053,17 +1053,17 @@ public class PaymentOrder extends AuditableSoftDeletable {
 ### Task 6: Implement RefundOrder Aggregate with Audit Workflow
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java`
+- Create: `src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java`
 
 **Step 1: Write RefundOrder aggregate with audit methods**
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
 import cn.hutool.core.util.StrUtil;
-import com.aieducenter.payment.domain.enums.BusinessType;
-import com.aieducenter.payment.domain.enums.RefundStatus;
-import com.aieducenter.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.enums.BusinessType;
+import com.semgravio.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.error.PaymentMessage;
 import com.cartisan.core.exception.DomainException;
 import com.cartisan.core.stereotype.Aggregate;
 import com.cartisan.core.util.Assertions;
@@ -1353,13 +1353,13 @@ gateway:
 ### Task 9: Implement ICBC Configuration and Client Factory
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java`
-- Create: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcClientFactory.java`
+- Create: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java`
+- Create: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcClientFactory.java`
 
 **Step 1: Create IcbcConfig configuration class**
 
 ```java
-package com.aieducenter.payment.infrastructure.icbc;
+package com.semgravio.payment.infrastructure.icbc;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -1425,7 +1425,7 @@ public class IcbcConfig {
 **Step 2: Create IcbcClientFactory**
 
 ```java
-package com.aieducenter.payment.infrastructure.icbc;
+package com.semgravio.payment.infrastructure.icbc;
 
 import com.icbc.api.DefaultIcbcClient;
 import com.icbc.api.IcbcConstants;
@@ -1468,15 +1468,15 @@ public class IcbcClientFactory {
 ### Task 10: Define Payment Gateway Port Interface
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java`
+- Create: `src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java`
 
 **Step 1: Create PaymentGatewayPort interface**
 
 ```java
-package com.aieducenter.payment.domain.port;
+package com.semgravio.payment.domain.port;
 
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
 import com.cartisan.core.stereotype.Port;
 import com.cartisan.core.stereotype.PortType;
 
@@ -1508,7 +1508,7 @@ public interface PaymentGatewayPort {
 **Step 2: Create response DTOs**
 
 ```java
-package com.aieducenter.payment.domain.port;
+package com.semgravio.payment.domain.port;
 
 import lombok.Builder;
 import lombok.Data;
@@ -1572,17 +1572,17 @@ public class QueryRefundResponse {
 ### Task 11: Implement ICBC Payment Gateway Adapter
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
+- Create: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
 
 **Step 1: Implement ICBC payment adapter**
 
 ```java
-package com.aieducenter.payment.infrastructure.icbc;
+package com.semgravio.payment.infrastructure.icbc;
 
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.port.CreatePaymentResponse;
-import com.aieducenter.payment.domain.port.PaymentGatewayPort;
-import com.aieducenter.payment.domain.port.QueryPaymentResponse;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.port.CreatePaymentResponse;
+import com.semgravio.payment.domain.port.PaymentGatewayPort;
+import com.semgravio.payment.domain.port.QueryPaymentResponse;
 import com.cartisan.core.stereotype.Adapter;
 import com.cartisan.core.stereotype.PortType;
 import com.icbc.api.DefaultIcbcClient;
@@ -1598,7 +1598,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import static com.aieducenter.payment.domain.enums.PaymentStatus.*;
+import static com.semgravio.payment.domain.enums.PaymentStatus.*;
 
 @Component("icbcPaymentGateway")
 @Adapter(PortType.CLIENT)
@@ -1767,16 +1767,16 @@ public class IcbcPaymentGatewayAdapter implements PaymentGatewayPort {
 ### Task 12: Define Repository Interfaces
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/repository/PaymentOrderRepository.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/repository/RefundOrderRepository.java`
-- Create: `src/main/java/com/aieducenter/payment/domain/repository/PaymentLogRepository.java`
+- Create: `src/main/java/com/semgravio/payment/domain/repository/PaymentOrderRepository.java`
+- Create: `src/main/java/com/semgravio/payment/domain/repository/RefundOrderRepository.java`
+- Create: `src/main/java/com/semgravio/payment/domain/repository/PaymentLogRepository.java`
 
 **Step 1: Create PaymentOrderRepository**
 
 ```java
-package com.aieducenter.payment.domain.repository;
+package com.semgravio.payment.domain.repository;
 
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
 import com.cartisan.data.jpa.repository.BaseRepository;
 
 public interface PaymentOrderRepository extends BaseRepository<PaymentOrder, Long> {
@@ -1788,9 +1788,9 @@ public interface PaymentOrderRepository extends BaseRepository<PaymentOrder, Lon
 **Step 2: Create RefundOrderRepository**
 
 ```java
-package com.aieducenter.payment.domain.repository;
+package com.semgravio.payment.domain.repository;
 
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
 import com.cartisan.data.jpa.repository.BaseRepository;
 
 public interface RefundOrderRepository extends BaseRepository<RefundOrder, Long> {
@@ -1802,9 +1802,9 @@ public interface RefundOrderRepository extends BaseRepository<RefundOrder, Long>
 **Step 3: Create PaymentLogRepository**
 
 ```java
-package com.aieducenter.payment.domain.repository;
+package com.semgravio.payment.domain.repository;
 
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
 import com.cartisan.data.jpa.repository.BaseRepository;
 
 public interface PaymentLogRepository extends BaseRepository<PaymentLog, Long> {
@@ -1819,15 +1819,15 @@ public interface PaymentLogRepository extends BaseRepository<PaymentLog, Long> {
 ### Task 13: Implement Payment Application Service
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/PaymentAppService.java`
-- Create: `src/main/java/com/aieducenter/payment/application/dto/command/CreatePaymentCommand.java`
-- Create: src/main/java/com/aieducenter/payment/application/dto/response/PaymentOrderResponse.java`
-- Create: src/main/java/com/aieducenter/payment/application/mapper/PaymentOrderMapper.java
+- Create: `src/main/java/com/semgravio/payment/application/PaymentAppService.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/command/CreatePaymentCommand.java`
+- Create: src/main/java/com/semgravio/payment/application/dto/response/PaymentOrderResponse.java`
+- Create: src/main/java/com/semgravio/payment/application/mapper/PaymentOrderMapper.java
 
 **Step 1: Create CreatePaymentCommand**
 
 ```java
-package com.aieducenter.payment.application.dto.command;
+package com.semgravio.payment.application.dto.command;
 
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
@@ -1871,11 +1871,11 @@ public record CreatePaymentCommand(
 **Step 2: Create PaymentOrderResponse**
 
 ```java
-package com.aieducenter.payment.application.dto.response;
+package com.semgravio.payment.application.dto.response;
 
-import com.aieducenter.payment.domain.enums.BusinessType;
-import com.aieducenter.payment.domain.enums.PaymentMethod;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.enums.BusinessType;
+import com.semgravio.payment.domain.enums.PaymentMethod;
+import com.semgravio.payment.domain.enums.PaymentStatus;
 
 import java.time.LocalDateTime;
 
@@ -1902,15 +1902,15 @@ public record PaymentOrderResponse(
 **Step 3: Implement PaymentAppService**
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.command.CreatePaymentCommand;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
-import com.aieducenter.payment.application.mapper.PaymentOrderMapper;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.port.*;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.application.dto.command.CreatePaymentCommand;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.application.mapper.PaymentOrderMapper;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.port.*;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -2009,16 +2009,16 @@ public class PaymentAppService {
 ### Task 14: Implement Payment API Controller
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java`
+- Create: `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java`
 
 **Step 1: Implement PaymentApiV1Controller**
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.payment.application.PaymentAppService;
-import com.aieducenter.payment.application.dto.command.CreatePaymentCommand;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.application.PaymentAppService;
+import com.semgravio.payment.application.dto.command.CreatePaymentCommand;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
 import com.cartisan.web.response.ApiResponse;
 import com.cartisan.web.response.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -2079,13 +2079,13 @@ public class PaymentApiV1Controller {
 ### Task 15: Write Unit Tests for Aggregates
 
 **Files:**
-- Create: `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderTest.java`
-- Create: `src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java`
+- Create: `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderTest.java`
+- Create: `src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java`
 
 **Step 1: Test PaymentOrder business logic**
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;
@@ -2169,7 +2169,7 @@ class PaymentOrderTest {
 **Step 2: Test RefundOrder audit workflow**
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.*;

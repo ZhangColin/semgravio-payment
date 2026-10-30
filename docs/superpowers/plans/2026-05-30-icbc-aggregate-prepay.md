@@ -49,14 +49,14 @@
 ### Task 1: Domain Enums — PayMode
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/PayMode.java`
-- Test: `src/test/java/com/aieducenter/payment/domain/enums/PayModeTest.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/PayMode.java`
+- Test: `src/test/java/com/semgravio/payment/domain/enums/PayModeTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-// src/test/java/com/aieducenter/payment/domain/enums/PayModeTest.java
-package com.aieducenter.payment.domain.enums;
+// src/test/java/com/semgravio/payment/domain/enums/PayModeTest.java
+package com.semgravio.payment.domain.enums;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -103,8 +103,8 @@ Expected: FAIL — class not found
 - [ ] **Step 3: Write minimal implementation**
 
 ```java
-// src/main/java/com/aieducenter/payment/domain/enums/PayMode.java
-package com.aieducenter.payment.domain.enums;
+// src/main/java/com/semgravio/payment/domain/enums/PayMode.java
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -150,7 +150,7 @@ Expected: Tests run: 4, Failures: 0
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/enums/PayMode.java src/test/java/com/aieducenter/payment/domain/enums/PayModeTest.java
+git add src/main/java/com/semgravio/payment/domain/enums/PayMode.java src/test/java/com/semgravio/payment/domain/enums/PayModeTest.java
 git commit -m "feat(prepay): add PayMode enum for aggregate payment"
 ```
 
@@ -159,14 +159,14 @@ git commit -m "feat(prepay): add PayMode enum for aggregate payment"
 ### Task 2: Domain Enums — AccessType
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/AccessType.java`
-- Test: `src/test/java/com/aieducenter/payment/domain/enums/AccessTypeTest.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/AccessType.java`
+- Test: `src/test/java/com/semgravio/payment/domain/enums/AccessTypeTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-// src/test/java/com/aieducenter/payment/domain/enums/AccessTypeTest.java
-package com.aieducenter.payment.domain.enums;
+// src/test/java/com/semgravio/payment/domain/enums/AccessTypeTest.java
+package com.semgravio.payment.domain.enums;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -221,8 +221,8 @@ Expected: FAIL — class not found
 - [ ] **Step 3: Write minimal implementation**
 
 ```java
-// src/main/java/com/aieducenter/payment/domain/enums/AccessType.java
-package com.aieducenter.payment.domain.enums;
+// src/main/java/com/semgravio/payment/domain/enums/AccessType.java
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -270,7 +270,7 @@ Expected: Tests run: 5, Failures: 0
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/enums/AccessType.java src/test/java/com/aieducenter/payment/domain/enums/AccessTypeTest.java
+git add src/main/java/com/semgravio/payment/domain/enums/AccessType.java src/test/java/com/semgravio/payment/domain/enums/AccessTypeTest.java
 git commit -m "feat(prepay): add AccessType enum for aggregate payment"
 ```
 
@@ -279,17 +279,17 @@ git commit -m "feat(prepay): add AccessType enum for aggregate payment"
 ### Task 3: Domain Entity Extension — PaymentOrder
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java`
-- Test: `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderPrepayTest.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java`
+- Test: `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderPrepayTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-// src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderPrepayTest.java
-package com.aieducenter.payment.domain.aggregate;
+// src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderPrepayTest.java
+package com.semgravio.payment.domain.aggregate;
 
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -436,8 +436,8 @@ public void setTradeType(String tradeType) {
 
 同时添加 import：
 ```java
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -453,7 +453,7 @@ Expected: Tests run: 8, Failures: 0
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderPrepayTest.java
+git add src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderPrepayTest.java
 git commit -m "feat(prepay): extend PaymentOrder with prepay fields (payMode, accessType, etc.)"
 ```
 
@@ -462,14 +462,14 @@ git commit -m "feat(prepay): extend PaymentOrder with prepay fields (payMode, ac
 ### Task 4: Domain Port — CreatePrepayResponse and PaymentGatewayPort
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/port/response/CreatePrepayResponse.java`
-- Modify: `src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java`
+- Create: `src/main/java/com/semgravio/payment/domain/port/response/CreatePrepayResponse.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java`
 
 - [ ] **Step 1: Create CreatePrepayResponse record**
 
 ```java
-// src/main/java/com/aieducenter/payment/domain/port/response/CreatePrepayResponse.java
-package com.aieducenter.payment.domain.port.response;
+// src/main/java/com/semgravio/payment/domain/port/response/CreatePrepayResponse.java
+package com.semgravio.payment.domain.port.response;
 
 /**
  * 创建预支付响应
@@ -543,7 +543,7 @@ CreatePrepayResponse createPrepay(PaymentOrder paymentOrder);
 
 添加 import：
 ```java
-import com.aieducenter.payment.domain.port.response.CreatePrepayResponse;
+import com.semgravio.payment.domain.port.response.CreatePrepayResponse;
 ```
 
 - [ ] **Step 3: Compile to verify**
@@ -556,7 +556,7 @@ Expected: BUILD SUCCESS（IcbcPaymentGatewayAdapter 会编译失败因为未实�
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/port/response/CreatePrepayResponse.java src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java
+git add src/main/java/com/semgravio/payment/domain/port/response/CreatePrepayResponse.java src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java
 git commit -m "feat(prepay): add CreatePrepayResponse and PaymentGatewayPort.createPrepay()"
 ```
 
@@ -597,7 +597,7 @@ git commit -m "feat(prepay): add database migration for aggregate payment fields
 ### Task 6: Infrastructure — IcbcConfig Extension
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java`
 
 - [ ] **Step 1: Add new config fields to IcbcConfig**
 
@@ -630,7 +630,7 @@ private String shopAppid;
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java src/main/resources/application-local.yml src/main/resources/application-test.yml src/main/resources/application-prod.yml
+git add src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java src/main/resources/application-local.yml src/main/resources/application-test.yml src/main/resources/application-prod.yml
 git commit -m "feat(prepay): add prepayUrl and shopAppid to IcbcConfig"
 ```
 
@@ -639,7 +639,7 @@ git commit -m "feat(prepay): add prepayUrl and shopAppid to IcbcConfig"
 ### Task 7: Infrastructure — IcbcPaymentGatewayAdapter.createPrepay()
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
 
 - [ ] **Step 1: Add createPrepay implementation**
 
@@ -651,8 +651,8 @@ git commit -m "feat(prepay): add prepayUrl and shopAppid to IcbcConfig"
 import com.icbc.api.request.CardbusinessAggregatepayB2cOnlineConsumepurchaseRequestV1;
 import com.icbc.api.request.CardbusinessAggregatepayB2cOnlineConsumepurchaseRequestV1.CardbusinessAggregatepayB2cOnlineConsumepurchaseRequestV1Biz;
 import com.icbc.api.response.CardbusinessAggregatepayB2cOnlineConsumepurchaseResponseV1;
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.port.response.CreatePrepayResponse;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.port.response.CreatePrepayResponse;
 ```
 
 **1b. 在 `createPayment()` 方法后添加 `createPrepay()` 方法：**
@@ -769,7 +769,7 @@ Expected: BUILD SUCCESS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java
+git add src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java
 git commit -m "feat(prepay): implement IcbcPaymentGatewayAdapter.createPrepay()"
 ```
 
@@ -778,14 +778,14 @@ git commit -m "feat(prepay): implement IcbcPaymentGatewayAdapter.createPrepay()"
 ### Task 8: Application DTOs
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/command/CreatePrepayCommand.java`
-- Create: `src/main/java/com/aieducenter/payment/application/dto/response/PrepayOrderResponse.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/command/CreatePrepayCommand.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/response/PrepayOrderResponse.java`
 
 - [ ] **Step 1: Create CreatePrepayCommand**
 
 ```java
-// src/main/java/com/aieducenter/payment/application/dto/command/CreatePrepayCommand.java
-package com.aieducenter.payment.application.dto.command;
+// src/main/java/com/semgravio/payment/application/dto/command/CreatePrepayCommand.java
+package com.semgravio.payment.application.dto.command;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -885,8 +885,8 @@ public record CreatePrepayCommand(
 - [ ] **Step 2: Create PrepayOrderResponse**
 
 ```java
-// src/main/java/com/aieducenter/payment/application/dto/response/PrepayOrderResponse.java
-package com.aieducenter.payment.application.dto.response;
+// src/main/java/com/semgravio/payment/application/dto/response/PrepayOrderResponse.java
+package com.semgravio.payment.application.dto.response;
 
 import java.time.LocalDateTime;
 
@@ -973,7 +973,7 @@ public record PrepayOrderResponse(
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/command/CreatePrepayCommand.java src/main/java/com/aieducenter/payment/application/dto/response/PrepayOrderResponse.java
+git add src/main/java/com/semgravio/payment/application/dto/command/CreatePrepayCommand.java src/main/java/com/semgravio/payment/application/dto/response/PrepayOrderResponse.java
 git commit -m "feat(prepay): add CreatePrepayCommand and PrepayOrderResponse DTOs"
 ```
 
@@ -982,26 +982,26 @@ git commit -m "feat(prepay): add CreatePrepayCommand and PrepayOrderResponse DTO
 ### Task 9: Application Service — PrepayAppService
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/PrepayAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/PrepayAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/PrepayAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/PrepayAppServiceTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-// src/test/java/com/aieducenter/payment/application/PrepayAppServiceTest.java
-package com.aieducenter.payment.application;
+// src/test/java/com/semgravio/payment/application/PrepayAppServiceTest.java
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.command.CreatePrepayCommand;
-import com.aieducenter.payment.application.dto.response.PrepayOrderResponse;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.port.PaymentGatewayPort;
-import com.aieducenter.payment.domain.port.response.CreatePrepayResponse;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.application.dto.command.CreatePrepayCommand;
+import com.semgravio.payment.application.dto.response.PrepayOrderResponse;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.port.PaymentGatewayPort;
+import com.semgravio.payment.domain.port.response.CreatePrepayResponse;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -1142,19 +1142,19 @@ Expected: FAIL — class not found
 - [ ] **Step 3: Write minimal implementation**
 
 ```java
-// src/main/java/com/aieducenter/payment/application/PrepayAppService.java
-package com.aieducenter.payment.application;
+// src/main/java/com/semgravio/payment/application/PrepayAppService.java
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.command.CreatePrepayCommand;
-import com.aieducenter.payment.application.dto.response.PrepayOrderResponse;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.port.PaymentGatewayPort;
-import com.aieducenter.payment.domain.port.response.CreatePrepayResponse;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.application.dto.command.CreatePrepayCommand;
+import com.semgravio.payment.application.dto.response.PrepayOrderResponse;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.port.PaymentGatewayPort;
+import com.semgravio.payment.domain.port.response.CreatePrepayResponse;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1282,7 +1282,7 @@ Expected: Tests run: 4, Failures: 0
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/PrepayAppService.java src/test/java/com/aieducenter/payment/application/PrepayAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/PrepayAppService.java src/test/java/com/semgravio/payment/application/PrepayAppServiceTest.java
 git commit -m "feat(prepay): implement PrepayAppService with tests"
 ```
 
@@ -1291,17 +1291,17 @@ git commit -m "feat(prepay): implement PrepayAppService with tests"
 ### Task 10: Endpoint — PrepayApiV1Controller
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PrepayApiV1Controller.java`
+- Create: `src/main/java/com/semgravio/payment/endpoints/api/v1/PrepayApiV1Controller.java`
 
 - [ ] **Step 1: Create controller**
 
 ```java
-// src/main/java/com/aieducenter/payment/endpoints/api/v1/PrepayApiV1Controller.java
-package com.aieducenter.payment.endpoints.api.v1;
+// src/main/java/com/semgravio/payment/endpoints/api/v1/PrepayApiV1Controller.java
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.payment.application.PrepayAppService;
-import com.aieducenter.payment.application.dto.command.CreatePrepayCommand;
-import com.aieducenter.payment.application.dto.response.PrepayOrderResponse;
+import com.semgravio.payment.application.PrepayAppService;
+import com.semgravio.payment.application.dto.command.CreatePrepayCommand;
+import com.semgravio.payment.application.dto.response.PrepayOrderResponse;
 import com.cartisan.core.context.RequestContext;
 import com.cartisan.openapi.annotation.RequireSignature;
 import com.cartisan.web.response.ApiResponse;
@@ -1349,7 +1349,7 @@ Expected: BUILD SUCCESS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/PrepayApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/PrepayApiV1Controller.java
 git commit -m "feat(prepay): add PrepayApiV1Controller with POST /api/v1/payments/prepay"
 ```
 
@@ -1358,25 +1358,25 @@ git commit -m "feat(prepay): add PrepayApiV1Controller with POST /api/v1/payment
 ### Task 11: Callback Enhancement — payMode/accessType Backfill
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceBackfillTest.java`
+- Modify: `src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceBackfillTest.java`
 
 - [ ] **Step 1: Write the failing test**
 
 ```java
-// src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceBackfillTest.java
-package com.aieducenter.payment.application;
+// src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceBackfillTest.java
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.IcbcCallbackParam;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.enums.PaymentChannel;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
-import com.aieducenter.payment.infrastructure.icbc.IcbcCallbackVerifier;
+import com.semgravio.payment.application.dto.callback.IcbcCallbackParam;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.PaymentChannel;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.infrastructure.icbc.IcbcCallbackVerifier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -1497,8 +1497,8 @@ Expected: FAIL — payMode is null (not backfilled yet)
 
 **3a. 添加 import：**
 ```java
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.AccessType;
 ```
 
 **3b. 在 `handleCallback()` 方法中，`markAsPaid` 调用之后、`paymentOrderRepository.save(order)` 之前，添加回填逻辑：**
@@ -1572,7 +1572,7 @@ Expected: Tests run: 5, Failures: 0
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceBackfillTest.java
+git add src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceBackfillTest.java
 git commit -m "feat(prepay): backfill payMode/accessType from callback pay_type/access_type"
 ```
 
@@ -1581,7 +1581,7 @@ git commit -m "feat(prepay): backfill payMode/accessType from callback pay_type/
 ### Task 12: Existing Payment Enhancement — Set accessType=H5
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/PaymentAppService.java`
+- Modify: `src/main/java/com/semgravio/payment/application/PaymentAppService.java`
 
 - [ ] **Step 1: Modify PaymentAppService.createPayment() to set accessType**
 
@@ -1589,7 +1589,7 @@ git commit -m "feat(prepay): backfill payMode/accessType from callback pay_type/
 
 **1a. 添加 import：**
 ```java
-import com.aieducenter.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.AccessType;
 ```
 
 **1b. 在 `createPayment()` 方法中，`paymentOrder.setClientIp(clientIp);` 之后添加：**
@@ -1607,7 +1607,7 @@ Expected: All pass
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/PaymentAppService.java
+git add src/main/java/com/semgravio/payment/application/PaymentAppService.java
 git commit -m "feat(prepay): set accessType=H5 for existing QR code payments"
 ```
 

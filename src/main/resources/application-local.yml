@@ -1,7 +1,7 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/aieducenter
-    username: aiedu
+    url: jdbc:postgresql://localhost:5432/semgravio
+    username: semgravio
     password: dev123
   data:
     redis:

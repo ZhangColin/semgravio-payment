@@ -1,8 +1,8 @@
-# aieducenter-payment
+# semgravio-payment
 
 平台**支付域**服务（基础能力层）——为业务应用提供支付下单、预下单、退款等机机接口，并对入站调用做机机签名校验。本文件是本服务的**术语表 + 设计不变式**，不含实现细节。
 
-> 架构权威在兄弟仓库 [`../aieducenter-architecture/`](../aieducenter-architecture/)。机机验签凭据的登记与颁发归兄弟仓库 [`../aieducenter-app-registry/`](../aieducenter-app-registry/)（平台「应用/消费方」单一登记处，签名凭据的唯一源）。本文件是二者在 payment 服务内的落地折射。
+> 架构权威在兄弟仓库 [`../semgravio-architecture/`](../semgravio-architecture/)。机机验签凭据的登记与颁发归兄弟仓库 [`../semgravio-app-registry/`](../semgravio-app-registry/)（平台「应用/消费方」单一登记处，签名凭据的唯一源）。本文件是二者在 payment 服务内的落地折射。
 
 ## 稳定不变式（务必遵守）
 

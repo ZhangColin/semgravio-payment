@@ -16,23 +16,23 @@
 
 ### New Files
 - `src/main/resources/db/migration/V2__add_notify_url_to_refund_orders.sql` — Flyway 迁移脚本
-- `src/main/java/com/aieducenter/payment/application/dto/callback/RefundNotifyRequest.java` — 退款回调通知 DTO
-- `src/main/java/com/aieducenter/payment/application/RefundQueryScheduler.java` — 退款查询定时任务
-- `src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java` — 退款服务测试
+- `src/main/java/com/semgravio/payment/application/dto/callback/RefundNotifyRequest.java` — 退款回调通知 DTO
+- `src/main/java/com/semgravio/payment/application/RefundQueryScheduler.java` — 退款查询定时任务
+- `src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java` — 退款服务测试
 
 ### Modified Files
-- `src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java` — 新增 notifyUrl 字段，修改 startRefund 签名
-- `src/main/java/com/aieducenter/payment/domain/repository/RefundOrderRepository.java` — 新增 findByStatusIn
-- `src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java` — 修改 queryRefund 签名
-- `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java` — 实现 queryRefund
-- `src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java` — 新增退款通知重载
-- `src/main/java/com/aieducenter/payment/application/RefundAppService.java` — 核心退款流程变更
-- `src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java` — 新增 notifyUrl
-- `src/main/java/com/aieducenter/payment/application/dto/response/RefundOrderResponse.java` — 新增 notifyUrl, failedAt
-- `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java` — getRefund → queryRefund
+- `src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java` — 新增 notifyUrl 字段，修改 startRefund 签名
+- `src/main/java/com/semgravio/payment/domain/repository/RefundOrderRepository.java` — 新增 findByStatusIn
+- `src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java` — 修改 queryRefund 签名
+- `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java` — 实现 queryRefund
+- `src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java` — 新增退款通知重载
+- `src/main/java/com/semgravio/payment/application/RefundAppService.java` — 核心退款流程变更
+- `src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java` — 新增 notifyUrl
+- `src/main/java/com/semgravio/payment/application/dto/response/RefundOrderResponse.java` — 新增 notifyUrl, failedAt
+- `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java` — getRefund → queryRefund
 - `src/main/resources/application-local.yml` — 添加 refund-query-url 和 scheduler 配置
 - `src/main/resources/application-prod.yml` — 添加 refund-query-url
-- `src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java` — 更新 startRefund 测试
+- `src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java` — 更新 startRefund 测试
 
 ---
 
@@ -40,8 +40,8 @@
 
 **Files:**
 - Create: `src/main/resources/db/migration/V2__add_notify_url_to_refund_orders.sql`
-- Modify: `src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java`
-- Modify: `src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java`
+- Modify: `src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java`
 
 - [ ] **Step 1: 创建 Flyway 迁移脚本**
 
@@ -120,8 +120,8 @@ Expected: All tests pass
 
 ```bash
 git add src/main/resources/db/migration/V2__add_notify_url_to_refund_orders.sql \
-  src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java \
-  src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java
+  src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java \
+  src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java
 git commit -m "feat(refund): add notifyUrl to RefundOrder, update startRefund to accept bankRefundNo"
 ```
 
@@ -130,8 +130,8 @@ git commit -m "feat(refund): add notifyUrl to RefundOrder, update startRefund to
 ### Task 2: PaymentGatewayPort 签名变更 + ICBC queryRefund 实现
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java`
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
 - Modify: `src/main/resources/application-local.yml`
 - Modify: `src/main/resources/application-prod.yml`
 
@@ -241,8 +241,8 @@ Expected: BUILD SUCCESS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/port/PaymentGatewayPort.java \
-  src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java \
+git add src/main/java/com/semgravio/payment/domain/port/PaymentGatewayPort.java \
+  src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java \
   src/main/resources/application-local.yml \
   src/main/resources/application-prod.yml
 git commit -m "feat(refund): implement ICBC refund query, update PaymentGatewayPort signature"
@@ -253,11 +253,11 @@ git commit -m "feat(refund): implement ICBC refund query, update PaymentGatewayP
 ### Task 3: Repository + DTO + Notifier 变更
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/domain/repository/RefundOrderRepository.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/dto/response/RefundOrderResponse.java`
-- Create: `src/main/java/com/aieducenter/payment/application/dto/callback/RefundNotifyRequest.java`
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/repository/RefundOrderRepository.java`
+- Modify: `src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java`
+- Modify: `src/main/java/com/semgravio/payment/application/dto/response/RefundOrderResponse.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/callback/RefundNotifyRequest.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java`
 
 - [ ] **Step 1: RefundOrderRepository 新增 findByStatusIn**
 
@@ -307,7 +307,7 @@ public record RefundOrderResponse(
 - [ ] **Step 4: 创建 RefundNotifyRequest**
 
 ```java
-package com.aieducenter.payment.application.dto.callback;
+package com.semgravio.payment.application.dto.callback;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 
@@ -391,7 +391,7 @@ private void sendNotification(String notifyUrl, String body, String orderId) {
 }
 ```
 
-需要添加 `import com.aieducenter.payment.application.dto.callback.RefundNotifyRequest;`
+需要添加 `import com.semgravio.payment.application.dto.callback.RefundNotifyRequest;`
 
 - [ ] **Step 6: 编译验证**
 
@@ -401,11 +401,11 @@ Expected: BUILD SUCCESS
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/repository/RefundOrderRepository.java \
-  src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java \
-  src/main/java/com/aieducenter/payment/application/dto/response/RefundOrderResponse.java \
-  src/main/java/com/aieducenter/payment/application/dto/callback/RefundNotifyRequest.java \
-  src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java
+git add src/main/java/com/semgravio/payment/domain/repository/RefundOrderRepository.java \
+  src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java \
+  src/main/java/com/semgravio/payment/application/dto/response/RefundOrderResponse.java \
+  src/main/java/com/semgravio/payment/application/dto/callback/RefundNotifyRequest.java \
+  src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java
 git commit -m "feat(refund): add repository query, DTOs, and notifier for refund workflow"
 ```
 
@@ -414,8 +414,8 @@ git commit -m "feat(refund): add repository query, DTOs, and notifier for refund
 ### Task 4: RefundAppService 核心流程重构
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/RefundAppService.java`
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/application/RefundAppService.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java`
 
 这是最核心的变更。
 
@@ -436,8 +436,8 @@ private final TransactionTemplate transactionTemplate;
 需要添加 import：
 ```java
 import org.springframework.transaction.support.TransactionTemplate;
-import com.aieducenter.payment.domain.port.response.CreateRefundResponse;
-import com.aieducenter.payment.domain.port.response.QueryRefundResponse;
+import com.semgravio.payment.domain.port.response.CreateRefundResponse;
+import com.semgravio.payment.domain.port.response.QueryRefundResponse;
 ```
 
 - [ ] **Step 2: 修改 createRefund — 传入 notifyUrl**
@@ -761,8 +761,8 @@ Expected: BUILD SUCCESS
 - [ ] **Step 11: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/RefundAppService.java \
-  src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java
+git add src/main/java/com/semgravio/payment/application/RefundAppService.java \
+  src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java
 git commit -m "feat(refund): implement core refund workflow with TransactionTemplate"
 ```
 
@@ -771,19 +771,19 @@ git commit -m "feat(refund): implement core refund workflow with TransactionTemp
 ### Task 5: RefundQueryScheduler 定时任务
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/RefundQueryScheduler.java`
+- Create: `src/main/java/com/semgravio/payment/application/RefundQueryScheduler.java`
 
 - [ ] **Step 1: 创建 RefundQueryScheduler**
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.enums.RefundStatus;
-import com.aieducenter.payment.domain.error.PaymentMessage;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
 import com.cartisan.core.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -854,7 +854,7 @@ Expected: BUILD SUCCESS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/RefundQueryScheduler.java
+git add src/main/java/com/semgravio/payment/application/RefundQueryScheduler.java
 git commit -m "feat(refund): add scheduled task for refund status polling"
 ```
 
@@ -863,29 +863,29 @@ git commit -m "feat(refund): add scheduled task for refund status polling"
 ### Task 6: RefundAppServiceTest 单元测试
 
 **Files:**
-- Create: `src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java`
+- Create: `src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java`
 
 - [ ] **Step 1: 编写完整的 RefundAppServiceTest**
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.RefundNotifyRequest;
-import com.aieducenter.payment.application.dto.command.AuditRefundCommand;
-import com.aieducenter.payment.application.dto.command.CreateRefundCommand;
-import com.aieducenter.payment.application.dto.response.RefundOrderResponse;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.enums.PaymentChannel;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.enums.RefundStatus;
-import com.aieducenter.payment.domain.port.PaymentGatewayPort;
-import com.aieducenter.payment.domain.port.response.CreateRefundResponse;
-import com.aieducenter.payment.domain.port.response.QueryRefundResponse;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.application.dto.callback.RefundNotifyRequest;
+import com.semgravio.payment.application.dto.command.AuditRefundCommand;
+import com.semgravio.payment.application.dto.command.CreateRefundCommand;
+import com.semgravio.payment.application.dto.response.RefundOrderResponse;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.enums.PaymentChannel;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.port.PaymentGatewayPort;
+import com.semgravio.payment.domain.port.response.CreateRefundResponse;
+import com.semgravio.payment.domain.port.response.QueryRefundResponse;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -1174,7 +1174,7 @@ Expected: All tests pass
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java
+git add src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java
 git commit -m "test(refund): add RefundAppServiceTest covering core refund workflow"
 ```
 

@@ -5,7 +5,7 @@
 
 ## 1. 目标与范围
 
-新增 `StatsAppService`（只读）+ 4 个 `@RequireSignature` 端点，全部**银行无关**（CONTEXT.md 不变式 5）：
+新增 `StatsAppService`（只读）+ 4 个 `@RequireSignature` 端点，全部**银行无关**（GLOSSARY.md 不变式 5）：
 
 | 端点 | 参数 | 数据源 |
 |---|---|---|
@@ -169,14 +169,14 @@ record OperationsAuditResponse(
   - audit byAuditor 透视、approvalRate、avgDurationMinutes、空。
   - bucket 上限超限抛 `STATS_RANGE_TOO_LARGE`、from>to 抛 `STATS_INVALID_RANGE`。
   - 用 `ArgumentCaptor` 验传给仓储的 from/to/granularity（变异友好）。
-- **pitest**：pom.xml `targetClasses` 加 `com.aieducenter.payment.application.StatsAppService`（threshold 70%）。
+- **pitest**：pom.xml `targetClasses` 加 `com.semgravio.payment.application.StatsAppService`（threshold 70%）。
 - **不引入** `@DataJpaTest`、不引入控制器测试缝（薄委托，签名兜底沿用既有 `SignatureVerificationIntegrationTest`）。
 - `ArchitectureTest` 自动守护新代码分层（应用→基础设施依赖、命名、禁字段注入等）。
 
 ## 10. pom.xml 变更
 
 - 加依赖 `com.cartisan:cartisan-data-query:0.1.0-SNAPSHOT`（jOOQ 版本由 BOM 管）。
-- pitest `targetClasses` 增 `com.aieducenter.payment.application.StatsAppService`。
+- pitest `targetClasses` 增 `com.semgravio.payment.application.StatsAppService`。
 
 ## 11. 性能与索引
 

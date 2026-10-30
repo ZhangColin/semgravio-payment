@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>spec「按职责拆分应用服务」：与既有写侧 {@code PaymentAppService}（创建 / 查状态 / 取消）分离，
  * 仅承担多条件分页读列表。详情沿用既有 {@code PaymentAppService.getPayment}。查询银行无关
- * （CONTEXT.md 不变式 5）。</p>
+ * （GLOSSARY.md 不变式 5）。</p>
  */
 @Service
 @RequiredArgsConstructor

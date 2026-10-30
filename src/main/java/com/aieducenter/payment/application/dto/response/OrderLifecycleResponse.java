@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
  *
  * <p>把 {@code PaymentLog}（网关交互，来源 GATEWAY）与 {@code OperationLog}（行为者操作，来源 OPERATION）
  * 按 {@code createdAt} 合并后的统一事件序列项。供客诉排查与运营查看「这单经历了什么」
- * （CONTEXT.md · 订单生命周期；ADR-0002 · 不合表、合视图）。只读、不写库。</p>
+ * （GLOSSARY.md · 订单生命周期；ADR-0002 · 不合表、合视图）。只读、不写库。</p>
  *
  * <p>字段为跨来源的语义抽象：来源标签 + 动作 + 结果 + 执行方 + 补充说明，两类来源各自填值。
- * 银行无关（CONTEXT.md 不变式 5）——网关事件只透出 bankCode/bankInterface 通用列。</p>
+ * 银行无关（GLOSSARY.md 不变式 5）——网关事件只透出 bankCode/bankInterface 通用列。</p>
  *
  * @param id              源记录主键（PaymentLog.id / OperationLog.id；同时间排序的稳定键）
  * @param source          来源标签：{@code "GATEWAY"}（网关交互）/ {@code "OPERATION"}（行为者操作）

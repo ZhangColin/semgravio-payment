@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
  *
  * <p>沿用 PaymentOrderQueryAppServiceTest 模式：mock 仓储与 Mapper（DomainMapper 实例 convert），
  * 构造被测服务直接驱动。覆盖：Pagination（wire 1-based）→ Spring 0-based PageRequest 换算
- * 与 PageResponse.of 回显。查询银行无关（CONTEXT.md 不变式 5）——筛选维度为网关交互日志的
+ * 与 PageResponse.of 回显。查询银行无关（GLOSSARY.md 不变式 5）——筛选维度为网关交互日志的
  * 通用列，无 ICBC 硬编码。</p>
  *
  * <p>说明：仓储 findAll 被 mock，Specification 不真正执行（不引入 @DataJpaTest，与现有代码库一致）；

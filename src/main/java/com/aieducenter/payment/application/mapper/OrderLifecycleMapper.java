@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
  * {@code convert} 模式。故以普通 {@code @Component} 类提供两个来源各自的映射法，由
  * {@link com.aieducenter.payment.application.OrderLifecycleAppService} 注入并按来源分别调用。</p>
  *
- * <p>银行无关（CONTEXT.md 不变式 5）：网关事件只读 PaymentLog 的通用列（bankCode/bankInterface/success/returnMsg/errorMessage），
+ * <p>银行无关（GLOSSARY.md 不变式 5）：网关事件只读 PaymentLog 的通用列（bankCode/bankInterface/success/returnMsg/errorMessage），
  * 无 ICBC 硬编码。</p>
  */
 @Component

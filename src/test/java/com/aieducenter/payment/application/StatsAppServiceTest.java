@@ -55,7 +55,7 @@ import static org.mockito.Mockito.when;
  *
  * <p>mock {@link StatsQueryRepository} 返回投影 record，断言 AppService 的**装配逻辑**：
  * 成功率/通过率计算（含除零保护）、净额、趋势桶序列补零、桶上限与区间校验。
- * 银行无关（CONTEXT.md 不变式 5）——SQL 不出现 ICBC 硬编码，由 jOOQ 实现保证。</p>
+ * 银行无关（GLOSSARY.md 不变式 5）——SQL 不出现 ICBC 硬编码，由 jOOQ 实现保证。</p>
  */
 @ExtendWith(MockitoExtension.class)
 @DisplayName("统计应用服务测试")

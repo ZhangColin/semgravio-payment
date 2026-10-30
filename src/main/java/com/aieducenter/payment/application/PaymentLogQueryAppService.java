@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
  * 支付网关日志查询应用服务（读侧）。
  *
  * <p>把既有按单查询（{@code PaymentLogRepository#findBy*OrderByCreatedAtDesc}）扩展为多条件分页读列表，
- * 供网关交互日志的集成调试、银行侧问题排查、网关健康度统计（CONTEXT.md · PaymentLog）。
- * 查询银行无关（CONTEXT.md 不变式 5）——筛选维度为网关交互日志的通用列，无 ICBC 硬编码。
+ * 供网关交互日志的集成调试、银行侧问题排查、网关健康度统计（GLOSSARY.md · PaymentLog）。
+ * 查询银行无关（GLOSSARY.md 不变式 5）——筛选维度为网关交互日志的通用列，无 ICBC 硬编码。
  * 沿用 T2（支付订单列表）确立的本仓列表查询范式。</p>
  */
 @Service

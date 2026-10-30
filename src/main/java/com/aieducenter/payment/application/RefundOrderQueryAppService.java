@@ -18,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>spec「按职责拆分应用服务」：与既有写侧 {@code RefundAppService}（创建 / 审核 / 查状态同步）分离，
  * 仅承担多条件分页读列表。详情沿用既有 {@code RefundAppService.queryRefund}。查询银行无关
- * （CONTEXT.md 不变式 5）。沿用 T2（支付订单列表）确立的本仓列表查询范式。</p>
+ * （GLOSSARY.md 不变式 5）。沿用 T2（支付订单列表）确立的本仓列表查询范式。</p>
  */
 @Service
 @RequiredArgsConstructor

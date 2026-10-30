@@ -19,9 +19,9 @@ import java.util.List;
  *
  * <p>按 {@code orderNo}（支付订单号）合并该订单的 PaymentLog（既有按单查询）与 OperationLog（T1 的按 targetNo 查询），
  * 各自映射为统一事件后按 {@code createdAt} 升序返回——「这单从创建到终态经历了什么」
- * （CONTEXT.md · 订单生命周期；ADR-0002 · 不合表、合视图）。</p>
+ * （GLOSSARY.md · 订单生命周期；ADR-0002 · 不合表、合视图）。</p>
  *
- * <p><b>只读</b>：{@code @Transactional(readOnly = true)}，不落库、不改订单状态（ADR-0001）。银行无关（CONTEXT.md 不变式 5）。</p>
+ * <p><b>只读</b>：{@code @Transactional(readOnly = true)}，不落库、不改订单状态（ADR-0001）。银行无关（GLOSSARY.md 不变式 5）。</p>
  */
 @Service
 @RequiredArgsConstructor

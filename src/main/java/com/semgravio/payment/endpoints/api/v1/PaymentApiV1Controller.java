@@ -1,0 +1,118 @@
+package com.semgravio.payment.endpoints.api.v1;
+
+import com.semgravio.payment.application.NotificationResendAppService;
+import com.semgravio.payment.application.PaymentAppService;
+import com.semgravio.payment.application.PaymentOrderQueryAppService;
+import com.semgravio.payment.application.PrepayAppService;
+import com.semgravio.payment.application.dto.command.CreatePaymentCommand;
+import com.semgravio.payment.application.dto.command.CreatePrepayCommand;
+import com.semgravio.payment.application.dto.command.ResendNotificationCommand;
+import com.semgravio.payment.application.dto.query.PaymentOrderQuery;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.application.dto.response.PrepayOrderResponse;
+import com.cartisan.core.context.RequestContext;
+import com.cartisan.openapi.annotation.RequireSignature;
+import com.cartisan.web.request.Pagination;
+import com.cartisan.web.response.ApiResponse;
+import com.cartisan.web.response.PageResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import com.cartisan.web.util.IpUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/payments")
+@RequiredArgsConstructor
+@Validated
+@Tag(name = "Payment API v1", description = "支付接口 v1")
+public class PaymentApiV1Controller {
+
+    private final PaymentAppService paymentAppService;
+    private final PaymentOrderQueryAppService paymentOrderQueryAppService;
+    private final NotificationResendAppService notificationResendAppService;
+
+    @PostMapping
+    @RequireSignature
+    @Operation(summary = "创建支付订单")
+    public ApiResponse<PaymentOrderResponse> createPayment(
+            @Valid @RequestBody CreatePaymentCommand command,
+            HttpServletRequest request
+    ) {
+        String businessSystemName = RequestContext.getCallerAppName();
+        String clientIp = IpUtil.getClientIp(request);
+        PaymentOrderResponse response = paymentAppService.createPayment(command, businessSystemName, clientIp);
+        return ApiResponse.ok(response);
+    }
+
+    private final PrepayAppService prepayAppService;
+
+    @PostMapping("/prepay")
+    @RequireSignature
+    @Operation(summary = "创建预支付订单")
+    public ApiResponse<PrepayOrderResponse> createPrepay(
+            @Valid @RequestBody CreatePrepayCommand command,
+            HttpServletRequest request
+    ) {
+        String businessSystemName = RequestContext.getCallerAppName();
+        String clientIp = IpUtil.getClientIp(request);
+        PrepayOrderResponse response = prepayAppService.createPrepay(command, businessSystemName, clientIp);
+        return ApiResponse.ok(response);
+    }
+
+    @GetMapping
+    @RequireSignature
+    @Operation(summary = "分页查询支付订单",
+        description = "分页全链 1-based：page 从 1 起（缺省 1），size 缺省 20、clamp 至 [1,100]；响应回显 page 同为 1-based")
+    public ApiResponse<PageResponse<PaymentOrderResponse>> list(
+            PaymentOrderQuery query,
+            Pagination pagination
+    ) {
+        return ApiResponse.ok(paymentOrderQueryAppService.list(query, pagination));
+    }
+
+    @GetMapping("/{paymentOrderNo}")
+    @RequireSignature
+    @Operation(summary = "查询支付订单")
+    public ApiResponse<PaymentOrderResponse> getPayment(
+            @PathVariable String paymentOrderNo
+    ) {
+        PaymentOrderResponse response = paymentAppService.getPayment(paymentOrderNo);
+        return ApiResponse.ok(response);
+    }
+
+    @PostMapping("/{paymentOrderNo}/query")
+    @RequireSignature
+    @Operation(summary = "主动查询支付状态")
+    public ApiResponse<PaymentOrderResponse> queryPaymentStatus(
+            @PathVariable String paymentOrderNo
+    ) {
+        PaymentOrderResponse response = paymentAppService.queryPaymentStatus(paymentOrderNo);
+        return ApiResponse.ok(response);
+    }
+
+    @PostMapping("/{paymentOrderNo}/cancel")
+    @RequireSignature
+    @Operation(summary = "取消支付订单")
+    public ApiResponse<PaymentOrderResponse> cancelPayment(
+            @PathVariable String paymentOrderNo
+    ) {
+        PaymentOrderResponse response = paymentAppService.cancelPayment(paymentOrderNo);
+        return ApiResponse.ok(response);
+    }
+
+    @PostMapping("/{paymentOrderNo}/notifications/resend")
+    @RequireSignature
+    @Operation(summary = "重发支付结果通知")
+    public ApiResponse<Void> resendPaymentNotification(
+            @PathVariable String paymentOrderNo,
+            @Valid @RequestBody ResendNotificationCommand command
+    ) {
+        notificationResendAppService.resendPaymentNotification(paymentOrderNo, command);
+        return ApiResponse.ok();
+    }
+
+}

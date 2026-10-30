@@ -12,12 +12,12 @@
 
 - 父 spec：Issue #8（实现规约）；本票：Issue #10（T2 · 支付订单列表）。
 - 范式参照：`OperationLogAppService` / `OperationLogQuery` / `OperationLogApiV1Controller`（最近实现，本仓列表查询范式）。
-- 术语：`CONTEXT.md`（不变式 5「对外接口与领域逻辑与具体银行解耦」）。
+- 术语：`GLOSSARY.md`（不变式 5「对外接口与领域逻辑与具体银行解耦」）。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`；框架手册：`docs/guide/cartisan-boot-使用手册.md`（@Condition 11 种条件类型、枚举增强、Pageable）。
 
 ## Global Constraints
 
-- **银行无关**：查询全程不出现 ICBC / 具体银行硬编码（CONTEXT.md 不变式 5）。`PaymentChannel` 是抽象通道枚举，`paymentChannel` 筛选是银行无关维度。
+- **银行无关**：查询全程不出现 ICBC / 具体银行硬编码（GLOSSARY.md 不变式 5）。`PaymentChannel` 是抽象通道枚举，`paymentChannel` 筛选是银行无关维度。
 - **不动既有写侧**：不修改 `PaymentAppService`、`PaymentOrder` 聚合、既有枚举、`PaymentOrderResponse`、`PaymentOrderMapper.convert` 静态方法、`GET /api/v1/payments/{no}`。新增只做「加法」。
 - **DTO 只用 Record**；响应只暴露 DTO，不暴露聚合。
 - **构造函数注入**（`@RequiredArgsConstructor`），禁止字段注入。
@@ -37,7 +37,7 @@
 | 仓储多条件查询 | **复用 `BaseRepository.findAll(Specification, Pageable)`，不改 `PaymentOrderRepository` 接口** | 与 OperationLog 一致；`ConditionSpecifications.fromAnnotation(query)` 生成 Specification；无需派生方法或 `@Query`，缝最少。 |
 | 新增索引 | V7 给 `paid_at` / `payment_channel` / `amount` 建部分索引 | V1 已覆盖 `business_order_no`/`business_system_name`/`status`/`created_at`；V5 已覆盖 `pay_mode`/`access_type`；`payment_order_no` 唯一索引。acceptance criteria「为筛选用字段建索引」→ 补齐剩余三个筛选用字段。 |
 | 端点位置 | **在既有 `PaymentApiV1Controller` 加 `@GetMapping list`** | `/api/v1/payments` 已是控制器根路径；详情 `GET /{paymentOrderNo}` 不动；list 与 detail 同控制器，Spring 路由无冲突（`GET /` vs `GET /{no}`）。 |
-| pitest 范围 | `targetClasses` 增 `com.aieducenter.payment.application.PaymentOrderQueryAppService` | 与 OperationLog 一致；query record / DTO / 控制器 / 枚举 / Mapper 不在变异评分范围（pom 既有约定）。 |
+| pitest 范围 | `targetClasses` 增 `com.semgravio.payment.application.PaymentOrderQueryAppService` | 与 OperationLog 一致；query record / DTO / 控制器 / 枚举 / Mapper 不在变异评分范围（pom 既有约定）。 |
 
 ## File Structure
 
@@ -45,7 +45,7 @@
 src/main/resources/db/migration/
 └── V7__add_payment_order_query_indexes.sql              [新] 为 paid_at/payment_channel/amount 建部分索引
 
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── application/
 │   ├── dto/query/
 │   │   └── PaymentOrderQuery.java                       [新] @Condition 多条件 record
@@ -55,7 +55,7 @@ src/main/java/com/aieducenter/payment/
 └── endpoints/api/v1/
     └── PaymentApiV1Controller.java                      [改] +GET /api/v1/payments（list，薄委托）
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 └── application/
     └── PaymentOrderQueryAppServiceTest.java             [新] Mockito 缝（list 参数传递 + 响应映射）
 
@@ -110,10 +110,10 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 2: `PaymentOrderQueryAppService` + `PaymentOrderQuery` + Mapper `convertList`（TDD）
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/query/PaymentOrderQuery.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/mapper/PaymentOrderMapper.java`
-- Create: `src/main/java/com/aieducenter/payment/application/PaymentOrderQueryAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/PaymentOrderQueryAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/query/PaymentOrderQuery.java`
+- Modify: `src/main/java/com/semgravio/payment/application/mapper/PaymentOrderMapper.java`
+- Create: `src/main/java/com/semgravio/payment/application/PaymentOrderQueryAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/PaymentOrderQueryAppServiceTest.java`
 
 **Interfaces:**
 - Consumes: `PaymentOrderRepository`（既有，`extends BaseRepository` → 已有 `findAll(Specification, Pageable)`）；`PaymentOrderMapper`（既有 static `convert`）。
@@ -125,15 +125,15 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 - [ ] **Step 1: 写查询条件 record（测试编译依赖的类型先行）**
 
-创建 `src/main/java/com/aieducenter/payment/application/dto/query/PaymentOrderQuery.java`：
+创建 `src/main/java/com/semgravio/payment/application/dto/query/PaymentOrderQuery.java`：
 
 ```java
-package com.aieducenter.payment.application.dto.query;
+package com.semgravio.payment.application.dto.query;
 
-import com.aieducenter.payment.domain.enums.AccessType;
-import com.aieducenter.payment.domain.enums.PayMode;
-import com.aieducenter.payment.domain.enums.PaymentChannel;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.enums.AccessType;
+import com.semgravio.payment.domain.enums.PayMode;
+import com.semgravio.payment.domain.enums.PaymentChannel;
+import com.semgravio.payment.domain.enums.PaymentStatus;
 import com.cartisan.data.jpa.specification.Condition;
 import com.cartisan.data.jpa.specification.ConditionType;
 
@@ -172,17 +172,17 @@ public record PaymentOrderQuery(
 
 - [ ] **Step 2: 写失败测试（Mockito 缝）**
 
-创建 `src/test/java/com/aieducenter/payment/application/PaymentOrderQueryAppServiceTest.java`：
+创建 `src/test/java/com/semgravio/payment/application/PaymentOrderQueryAppServiceTest.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.PaymentOrderQuery;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
-import com.aieducenter.payment.application.mapper.PaymentOrderMapper;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.application.dto.query.PaymentOrderQuery;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.application.mapper.PaymentOrderMapper;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -297,13 +297,13 @@ Expected: 编译失败——`PaymentOrderQueryAppService` 与 `PaymentOrderMappe
 
 - [ ] **Step 4: 给 Mapper 加 `convertList` default 方法（委托既有 static `convert`）**
 
-修改 `src/main/java/com/aieducenter/payment/application/mapper/PaymentOrderMapper.java`，在 `convert` 静态方法后追加 `convertList` default 方法，并在 import 区加 `java.util.List`：
+修改 `src/main/java/com/semgravio/payment/application/mapper/PaymentOrderMapper.java`，在 `convert` 静态方法后追加 `convertList` default 方法，并在 import 区加 `java.util.List`：
 
 ```java
-package com.aieducenter.payment.application.mapper;
+package com.semgravio.payment.application.mapper;
 
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -374,16 +374,16 @@ public interface PaymentOrderMapper {
 
 - [ ] **Step 5: 写 `PaymentOrderQueryAppService`（最小实现使测试通过）**
 
-创建 `src/main/java/com/aieducenter/payment/application/PaymentOrderQueryAppService.java`：
+创建 `src/main/java/com/semgravio/payment/application/PaymentOrderQueryAppService.java`：
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.query.PaymentOrderQuery;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
-import com.aieducenter.payment.application.mapper.PaymentOrderMapper;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.application.dto.query.PaymentOrderQuery;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.application.mapper.PaymentOrderMapper;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
 import com.cartisan.data.jpa.specification.ConditionSpecifications;
 import com.cartisan.web.response.PageResponse;
 import lombok.RequiredArgsConstructor;
@@ -397,7 +397,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>spec「按职责拆分应用服务」：与既有写侧 {@code PaymentAppService}（创建 / 查状态 / 取消）分离，
  * 仅承担多条件分页读列表。详情沿用既有 {@code PaymentAppService.getPayment}。查询银行无关
- * （CONTEXT.md 不变式 5）。</p>
+ * （GLOSSARY.md 不变式 5）。</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -436,10 +436,10 @@ Expected: BUILD SUCCESS——2 个测试全部通过。
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/query/PaymentOrderQuery.java \
-        src/main/java/com/aieducenter/payment/application/mapper/PaymentOrderMapper.java \
-        src/main/java/com/aieducenter/payment/application/PaymentOrderQueryAppService.java \
-        src/test/java/com/aieducenter/payment/application/PaymentOrderQueryAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/query/PaymentOrderQuery.java \
+        src/main/java/com/semgravio/payment/application/mapper/PaymentOrderMapper.java \
+        src/main/java/com/semgravio/payment/application/PaymentOrderQueryAppService.java \
+        src/test/java/com/semgravio/payment/application/PaymentOrderQueryAppServiceTest.java
 git commit -m "feat(payment): PaymentOrderQueryAppService（list 多条件分页）+ Query + Mapper convertList
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -450,7 +450,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3: 端点 `GET /api/v1/payments`（薄委托）
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java`
 
 **Interfaces:**
 - Consumes: Task 2 的 `PaymentOrderQueryAppService.list(query, pageable)`。
@@ -458,13 +458,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 - [ ] **Step 1: 在控制器加 list 端点（注入新 AppService + 加 GET 方法）**
 
-修改 `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java`：
+修改 `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java`：
 
 1. import 区追加（按既有导入顺序）：
 
 ```java
-import com.aieducenter.payment.application.PaymentOrderQueryAppService;
-import com.aieducenter.payment.application.dto.query.PaymentOrderQuery;
+import com.semgravio.payment.application.PaymentOrderQueryAppService;
+import com.semgravio.payment.application.dto.query.PaymentOrderQuery;
 import com.cartisan.web.response.PageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -500,7 +500,7 @@ Expected: BUILD SUCCESS——分层规则通过（Controller 可用领域枚举 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java
 git commit -m "feat(payment): GET /api/v1/payments 端点（@RequireSignature 多条件分页）
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -519,13 +519,13 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 - [ ] **Step 1: 把新 AppService 纳入 pitest targetClasses**
 
-修改 `pom.xml` 的 `<targetClasses>` 段，追加一行 `<param>com.aieducenter.payment.application.PaymentOrderQueryAppService</param>`：
+修改 `pom.xml` 的 `<targetClasses>` 段，追加一行 `<param>com.semgravio.payment.application.PaymentOrderQueryAppService</param>`：
 
 ```xml
                     <targetClasses>
-                        <param>com.aieducenter.payment.domain.aggregate.OperationLog</param>
-                        <param>com.aieducenter.payment.application.OperationLogAppService</param>
-                        <param>com.aieducenter.payment.application.PaymentOrderQueryAppService</param>
+                        <param>com.semgravio.payment.domain.aggregate.OperationLog</param>
+                        <param>com.semgravio.payment.application.OperationLogAppService</param>
+                        <param>com.semgravio.payment.application.PaymentOrderQueryAppService</param>
                     </targetClasses>
 ```
 

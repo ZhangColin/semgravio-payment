@@ -11,7 +11,7 @@
 ## 关联文档
 
 - 父 spec：Issue #8（实现规约，story 27「退款审核区分 AUTO/MANUAL，不被哨兵值误导」）。
-- 术语：`CONTEXT.md`（`auditType` 词条、`_Avoid_: 用 auditorName="SYSTEM" 哨兵判断`）。
+- 术语：`GLOSSARY.md`（`auditType` 词条、`_Avoid_: 用 auditorName="SYSTEM" 哨兵判断`）。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`。
 - 先例：`2026-04-14-refund-need-audit.md`（免审 `needAudit` 通道，本 issue 在其上把哨兵字段化）。
 
@@ -19,9 +19,9 @@
 
 - **`audit()` 签名不变**：保留 `audit(Long auditorId, String auditorName, Boolean agreed, String remark)`，仅在方法体内置 `this.auditType = AuditType.MANUAL`。所有既有调用点（AppService `auditRefund`、测试辅助方法）零改动。
 - **唯一调用点改动**：`RefundAppService.createRefund` 免审分支由 `saved.audit(null, "SYSTEM", true, "免审自动通过")` 改为 `saved.autoAudit()`。
-- **移除哨兵**：AUTO 路径 `auditorId=null` 且 `auditorName=null`（不再写 `"SYSTEM"`），`auditRemark=null`（`auditType=AUTO` 即信号，不留哨兵式备注，呼应 CONTEXT.md `_Avoid_`）。
+- **移除哨兵**：AUTO 路径 `auditorId=null` 且 `auditorName=null`（不再写 `"SYSTEM"`），`auditRemark=null`（`auditType=AUTO` 即信号，不留哨兵式备注，呼应 GLOSSARY.md `_Avoid_`）。
 - **BaseEnum**：`AuditType` 放 `domain/enums/`，实现 `BaseEnum<AuditType>` + 内部 `JpaConverter`（`@Converter(autoApply=true)`），DB 存 Integer code。
-- **银行无关**：全程无 ICBC / 具体银行硬编码（CONTEXT.md 不变式 5）。
+- **银行无关**：全程无 ICBC / 具体银行硬编码（GLOSSARY.md 不变式 5）。
 - **导入顺序**：Java 标准库 → hutool → Jakarta/Spring → cartisan → 项目内部。
 - **DTO 只用 Record**；响应只暴露 DTO，不暴露聚合；枚举以 Integer code + String name 暴露（沿用 `RefundOrderResponse` 的 `status/statusName` 约定）。
 - **测试命名**：`given_X_when_Y_then_Z`，AssertJ 断言。
@@ -32,11 +32,11 @@
 |--------|------|------|
 | 聚合 API | 拆 `audit(...)`（MANUAL）+ 新增 `autoAudit()`（AUTO） | 意图清晰、编码不变式（AUTO 恒无 auditor 且通过；MANUAL 恒有 auditor），彻底移除 `SYSTEM` 哨兵；`audit()` 签名不变→既有调用点零改动。 |
 | `audit_type` 列类型 | `INTEGER`（BaseEnum code：`AUTO=1`/`MANUAL=2`） | 与 `RefundStatus`/`OperationType` 一致；DB 存 code，响应暴露 code+name。 |
-| AUTO 时 `auditRemark` | `null` | `auditType=AUTO` 即信号，不留哨兵式备注（CONTEXT.md `_Avoid_` 呼应）。 |
+| AUTO 时 `auditRemark` | `null` | `auditType=AUTO` 即信号，不留哨兵式备注（GLOSSARY.md `_Avoid_` 呼应）。 |
 | AUTO 时 `auditorId/Name` | 均 `null` | spec 明示「auditorId 保持空」；不再写 `"SYSTEM"`。 |
 | 响应字段 | `auditType`(Integer) + `auditTypeName`(String)，紧随 `auditRemark` | 与 `RefundOrderResponse` 的 `status/statusName`、`OperationLogResponse` 一致。 |
 | 回填规则 | `auditor_id IS NOT NULL → 2(MANUAL)`，否则 `1(AUTO)`；回填后 `NOT NULL` | spec 明示。历史免审单 `auditor_id` 本就为空→`AUTO`；人工审核单有 `auditor_id`→`MANUAL`。 |
-| pitest | 追加 `com.aieducenter.payment.domain.aggregate.RefundOrder` 到 `<targetClasses>` | issue 要求「pitest 过」；与 operation-log 先例（新聚合入 pitest + 单独 chore commit）一致。 |
+| pitest | 追加 `com.semgravio.payment.domain.aggregate.RefundOrder` 到 `<targetClasses>` | issue 要求「pitest 过」；与 operation-log 先例（新聚合入 pitest + 单独 chore commit）一致。 |
 
 ## File Structure
 
@@ -44,7 +44,7 @@
 src/main/resources/db/migration/
 └── V8__add_refund_audit_type.sql                         [新] 加列 + 回填 + NOT NULL
 
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── domain/
 │   ├── enums/
 │   │   └── AuditType.java                                [新] 枚举 AUTO(1)/MANUAL(2)
@@ -56,7 +56,7 @@ src/main/java/com/aieducenter/payment/
 │   └── RefundAppService.java                             [改] createRefund 免审分支 audit→autoAudit；toResponse 透传 auditType
 └── pom.xml                                               [改] pitest targetClasses +RefundOrder
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 ├── domain/aggregate/
 │   └── RefundOrderTest.java                              [改] 扩展：AUTO(autoAudit) / MANUAL(audit) 两路径取值
 └── application/
@@ -82,7 +82,7 @@ src/test/java/com/aieducenter/payment/
 -- Payment Context: RefundOrder 引入 auditType（AUTO/MANUAL）
 -- 把「审核类型」从隐式哨兵（auditor_name='SYSTEM'）提升为显式枚举列。
 -- 免审（创建即自动通过）→ AUTO(1)；人工审核（操作者放行/拒绝）→ MANUAL(2)。
--- 历史回填：auditor_id 非空 → MANUAL，否则 → AUTO（见 CONTEXT.md auditType 词条）。
+-- 历史回填：auditor_id 非空 → MANUAL，否则 → AUTO（见 GLOSSARY.md auditType 词条）。
 -- ========================================================================
 
 ALTER TABLE pay_refund_orders ADD COLUMN audit_type INTEGER;
@@ -110,9 +110,9 @@ git commit -m "feat(payment): V8 迁移——RefundOrder.auditType 列 + 历史�
 ### Task 2: 领域层——AuditType 枚举 + RefundOrder 字段/方法（TDD）
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/domain/enums/AuditType.java`
-- Modify: `src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java`
-- Test: `src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java`
+- Create: `src/main/java/com/semgravio/payment/domain/enums/AuditType.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java`
+- Test: `src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java`
 
 **Interfaces:**
 - Produces（供 Task 3 消费）：
@@ -123,10 +123,10 @@ git commit -m "feat(payment): V8 迁移——RefundOrder.auditType 列 + 历史�
 
 - [ ] **Step 1: 创建枚举 `AuditType`**
 
-创建 `src/main/java/com/aieducenter/payment/domain/enums/AuditType.java`：
+创建 `src/main/java/com/semgravio/payment/domain/enums/AuditType.java`：
 
 ```java
-package com.aieducenter.payment.domain.enums;
+package com.semgravio.payment.domain.enums;
 
 import com.cartisan.core.domain.BaseEnum;
 import com.cartisan.data.jpa.converter.BaseEnumConverter;
@@ -138,7 +138,7 @@ import jakarta.persistence.Converter;
  * <p>{@link #AUTO} 为免审（创建时系统自动通过，{@code auditorId} 为空）；
  * {@link #MANUAL} 为人工审核（操作者放行/拒绝，{@code auditorId} 非空）。</p>
  *
- * <p>判断「是否人工审核」应看本字段，而非 {@code auditorName} 之类哨兵值（见 CONTEXT.md）。</p>
+ * <p>判断「是否人工审核」应看本字段，而非 {@code auditorName} 之类哨兵值（见 GLOSSARY.md）。</p>
  */
 public enum AuditType implements BaseEnum<AuditType> {
     AUTO(1, "免审"),
@@ -173,7 +173,7 @@ public enum AuditType implements BaseEnum<AuditType> {
 
 - [ ] **Step 2: 写失败测试（领域缝）——扩展 `RefundOrderTest`**
 
-在 `src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java` 追加（并在既有审核通过/拒绝用例补 `auditType` 断言）：
+在 `src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java` 追加（并在既有审核通过/拒绝用例补 `auditType` 断言）：
 
 ```java
 // 既有 given_pendingRefund_when_auditApproved_then_statusChangesToApproved 的 Then 段补：
@@ -221,7 +221,7 @@ void given_auditedRefund_when_autoAuditAgain_then_throwsException() {
 }
 ```
 
-并在测试类顶部补 import：`import com.aieducenter.payment.domain.enums.AuditType;`
+并在测试类顶部补 import：`import com.semgravio.payment.domain.enums.AuditType;`
 
 - [ ] **Step 3: 运行测试确认失败**
 
@@ -230,9 +230,9 @@ Expected: 编译失败（`AuditType` 不存在；`RefundOrder.getAuditType()` / 
 
 - [ ] **Step 4: 修改 `RefundOrder`——加字段 + `autoAudit()` + `audit()` 置 MANUAL**
 
-在 `src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java`：
+在 `src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java`：
 
-(a) import 段加 `import com.aieducenter.payment.domain.enums.AuditType;`
+(a) import 段加 `import com.semgravio.payment.domain.enums.AuditType;`
 
 (b) 在「Audit information」字段块（`auditorId` 之前）加：
 
@@ -273,9 +273,9 @@ Expected: 全部 PASS（含新增 2 个用例 + 既有用例补的断言）。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/enums/AuditType.java \
-        src/main/java/com/aieducenter/payment/domain/aggregate/RefundOrder.java \
-        src/test/java/com/aieducenter/payment/domain/aggregate/RefundOrderTest.java
+git add src/main/java/com/semgravio/payment/domain/enums/AuditType.java \
+        src/main/java/com/semgravio/payment/domain/aggregate/RefundOrder.java \
+        src/test/java/com/semgravio/payment/domain/aggregate/RefundOrderTest.java
 git commit -m "feat(payment): RefundOrder 引入 auditType（AUTO 免审 / MANUAL 人工）+ autoAudit()"
 ```
 
@@ -284,9 +284,9 @@ git commit -m "feat(payment): RefundOrder 引入 auditType（AUTO 免审 / MANUA
 ### Task 3: 应用层——Response 暴露 auditType + AppService 免审分支改 autoAudit
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/dto/response/RefundOrderResponse.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/RefundAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java`
+- Modify: `src/main/java/com/semgravio/payment/application/dto/response/RefundOrderResponse.java`
+- Modify: `src/main/java/com/semgravio/payment/application/RefundAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java`
 
 **Interfaces:**
 - Consumes: Task 2 的 `RefundOrder.getAuditType()`、`autoAudit()`、`AuditType`。
@@ -375,9 +375,9 @@ Expected: 全部 PASS。
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/response/RefundOrderResponse.java \
-        src/main/java/com/aieducenter/payment/application/RefundAppService.java \
-        src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/response/RefundOrderResponse.java \
+        src/main/java/com/semgravio/payment/application/RefundAppService.java \
+        src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java
 git commit -m "feat(payment): RefundOrderResponse 暴露 auditType；免审分支改 autoAudit() 移除 SYSTEM 哨兵"
 ```
 
@@ -400,7 +400,7 @@ Expected: PASS（`AuditType` 枚举遵循分层规则；`RefundOrder` 仍在领�
 在 `pom.xml` 的 `<targetClasses>` 段（约 235–239 行）追加：
 
 ```xml
-                        <param>com.aieducenter.payment.domain.aggregate.RefundOrder</param>
+                        <param>com.semgravio.payment.domain.aggregate.RefundOrder</param>
 ```
 
 并在该段上方注释补一行说明（issue #11 追加）。

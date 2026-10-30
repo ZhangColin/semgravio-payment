@@ -3,12 +3,12 @@ server:
 
 spring:
   application:
-    name: aieducenter-payment
+    name: semgravio-payment
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
   flyway:
     enabled: true
-    table: aieducenter-payment_flyway_schema_history
+    table: semgravio-payment_flyway_schema_history
     baseline-on-migrate: true
     baseline-version: "0"
     locations: classpath:db/migration
@@ -26,7 +26,7 @@ spring:
 # 字面 {apiKey} 段为占位符，由框架 RemoteApiKeyProvider 用调用方 X-Api-Key 的值替换。
 #
 # self.* 为 payment 自身的出站签名凭据（预留）：当前代码尚未消费，待 caller 能力
-# （如 BusinessSystemNotifier 出站通知签名）落地后启用；届时须同步修订 CONTEXT.md
+# （如 BusinessSystemNotifier 出站通知签名）落地后启用；届时须同步修订 GLOSSARY.md
 # 不变式 1，并在 app-registry 登记 payment 的 caller 凭据。生产须以环境变量注入真实值，勿硬编码。
 cartisan:
   openapi:

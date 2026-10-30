@@ -14,7 +14,7 @@
 - 本 issue：#16（T8 · 通知重发）。
 - 依赖：#9（T1 · OperationLog 能力）——**代码层已落地**（`OperationLog` 聚合 / `OperationLogAppService.record` / `OperationType.NOTIFY_RESEND` / `OperationLogTargetType.PAYMENT|REFUND` 均在库），本计划直接消费。
 - 决策：`docs/adr/0001-no-admin-state-mutation.md`（运营不施加状态——重发不改状态）、`docs/adr/0002-operation-log-separation.md`（OperationLog 记行为者写操作）。
-- 术语：`CONTEXT.md`。
+- 术语：`GLOSSARY.md`。
 - 编码规范：`docs/guide/限界上下文代码编写规范.md`（6.1 控制器注入字段归组至顶部）。
 - 先验：`RefundAppServiceTest`（AppService Mockito 缝 + `ArgumentCaptor` 验 `record(...)`）、`OperationLogAppService`（record 8 参签名）。
 
@@ -22,7 +22,7 @@
 
 - **不改订单状态**（ADR-0001）：重发方法全程不调用任何仓储 `save` / 聚合状态迁移方法；只读订单 → 重 POST → 落日志。
 - **仅终态重发**：`PaymentStatus.isTerminal()`（PAID/FAILED/CANCELLED/EXPIRED）、`RefundStatus.isTerminal()`（REJECTED/SUCCESS/FAILED）；非终态拒绝并抛 `ApplicationException`（明确错误码）。
-- **银行无关**（CONTEXT.md 不变式 5）：不出现 ICBC 硬编码。
+- **银行无关**（GLOSSARY.md 不变式 5）：不出现 ICBC 硬编码。
 - **身份双写**：操作者（`command.operatorId/operatorName`，来自请求体）+ 系统身份（`RequestContext.getCallerAppName()`，来自签名上下文）均写入 OperationLog。
 - **DTO 只用 Record**；端点响应 `ApiResponse<Void>`（动作型，无自然实体返回）；不暴露聚合。
 - **构造函数注入**（`@RequiredArgsConstructor`），禁止字段注入。
@@ -45,12 +45,12 @@
 | 事务边界 | 重发方法**不加** `@Transactional`、不注入 `TransactionTemplate` | 无状态变更；`OperationLogAppService.record` 自身 `@Transactional`；HTTP 通知不应在事务中（与 `PaymentCallbackAppService` afterCommit 通知同原则）。 |
 | 退款 payload 构造 | 提取 `RefundNotifyRequest.from(RefundOrder)` 静态工厂，`RefundAppService.notifyIfTerminal` 与重发服务共用 | 当前构造内联在 `notifyIfTerminal`；重发需产出**与首次通知完全一致**的 payload，单一真源避免分叉。行为保持等价（既有 `RefundAppServiceTest` 守护）。 |
 | 端点响应 | `ApiResponse<Void>`（`ApiResponse.ok()`） | 动作型端点无自然实体返回；调用方关心"是否已重发 + 是否终态"，由成功/错误码表达。 |
-| pitest 范围 | 追加 `com.aieducenter.payment.application.NotificationResendAppService` | 沿用 pom 既有策略：仅精确覆盖有 Mockito 缝的应用服务；Controller（薄委托）不进评分。 |
+| pitest 范围 | 追加 `com.semgravio.payment.application.NotificationResendAppService` | 沿用 pom 既有策略：仅精确覆盖有 Mockito 缝的应用服务；Controller（薄委托）不进评分。 |
 
 ## File Structure
 
 ```
-src/main/java/com/aieducenter/payment/
+src/main/java/com/semgravio/payment/
 ├── application/
 │   ├── dto/
 │   │   ├── callback/
@@ -65,7 +65,7 @@ src/main/java/com/aieducenter/payment/
     ├── PaymentApiV1Controller.java                  [改] +POST /{paymentOrderNo}/notifications/resend
     └── RefundApiV1Controller.java                   [改] +POST /{refundOrderNo}/notifications/resend
 
-src/test/java/com/aieducenter/payment/
+src/test/java/com/semgravio/payment/
 └── application/
     └── NotificationResendAppServiceTest.java        [新] Mockito 缝：终态判定 + 不改状态 + 落日志 + 身份透传
 
@@ -79,8 +79,8 @@ pom.xml                                              [改] pitest targetClasses 
 ### Task 1: DRY 前置——提取 `RefundNotifyRequest.from(RefundOrder)` 并复用于 `notifyIfTerminal`
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/dto/callback/RefundNotifyRequest.java`
-- Modify: `src/main/java/com/aieducenter/payment/application/RefundAppService.java`（`notifyIfTerminal`，行 303-318）
+- Modify: `src/main/java/com/semgravio/payment/application/dto/callback/RefundNotifyRequest.java`
+- Modify: `src/main/java/com/semgravio/payment/application/RefundAppService.java`（`notifyIfTerminal`，行 303-318）
 
 **Interfaces:**
 - Produces（供 Task 2 消费）：`RefundNotifyRequest.from(RefundOrder) → RefundNotifyRequest`（static）
@@ -95,7 +95,7 @@ pom.xml                                              [改] pitest targetClasses 
     /**
      * 由退款聚合构造通知 payload（首次通知与重发共用同一构造真源）。
      */
-    public static RefundNotifyRequest from(com.aieducenter.payment.domain.aggregate.RefundOrder order) {
+    public static RefundNotifyRequest from(com.semgravio.payment.domain.aggregate.RefundOrder order) {
         return new RefundNotifyRequest(
             order.getRefundOrderNo(),
             order.getBusinessOrderNo(),
@@ -134,8 +134,8 @@ Expected: PASS（9 个测试全绿；`ArgumentCaptor` 仍校验到 `status==5 / 
 - [ ] **Step 4: 提交**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/callback/RefundNotifyRequest.java \
-        src/main/java/com/aieducenter/payment/application/RefundAppService.java
+git add src/main/java/com/semgravio/payment/application/dto/callback/RefundNotifyRequest.java \
+        src/main/java/com/semgravio/payment/application/RefundAppService.java
 git commit -m "refactor(payment): 提取 RefundNotifyRequest.from，notifyIfTerminal 与重发服务共用
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -146,10 +146,10 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 2: `ResendNotificationCommand` + 错误码 + `NotificationResendAppService` + Mockito 缝测试（TDD）
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/command/ResendNotificationCommand.java`
-- Modify: `src/main/java/com/aieducenter/payment/domain/error/PaymentMessage.java`
-- Create: `src/main/java/com/aieducenter/payment/application/NotificationResendAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/NotificationResendAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/command/ResendNotificationCommand.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/error/PaymentMessage.java`
+- Create: `src/main/java/com/semgravio/payment/application/NotificationResendAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/NotificationResendAppServiceTest.java`
 
 **Interfaces:**
 - Consumes（既有）：
@@ -168,7 +168,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - [ ] **Step 1: 新建 `ResendNotificationCommand`（setup）**
 
 ```java
-package com.aieducenter.payment.application.dto.command;
+package com.semgravio.payment.application.dto.command;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -207,21 +207,21 @@ public record ResendNotificationCommand(
 - [ ] **Step 3: 写失败测试 `NotificationResendAppServiceTest`**
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.RefundNotifyRequest;
-import com.aieducenter.payment.application.dto.command.ResendNotificationCommand;
-import com.aieducenter.payment.application.dto.response.PaymentOrderResponse;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.enums.PaymentChannel;
-import com.aieducenter.payment.domain.enums.RefundStatus;
-import com.aieducenter.payment.domain.error.PaymentMessage;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.application.dto.callback.RefundNotifyRequest;
+import com.semgravio.payment.application.dto.command.ResendNotificationCommand;
+import com.semgravio.payment.application.dto.response.PaymentOrderResponse;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.enums.PaymentChannel;
+import com.semgravio.payment.domain.enums.RefundStatus;
+import com.semgravio.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
 import com.cartisan.core.context.RequestContext;
 import com.cartisan.core.exception.ApplicationException;
 import org.junit.jupiter.api.BeforeEach;
@@ -421,19 +421,19 @@ Expected: 编译失败——`NotificationResendAppService` 符号不存在。
 - [ ] **Step 5: 实现 `NotificationResendAppService`**
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.RefundNotifyRequest;
-import com.aieducenter.payment.application.dto.command.ResendNotificationCommand;
-import com.aieducenter.payment.application.mapper.PaymentOrderMapper;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.aggregate.RefundOrder;
-import com.aieducenter.payment.domain.enums.OperationLogTargetType;
-import com.aieducenter.payment.domain.enums.OperationType;
-import com.aieducenter.payment.domain.error.PaymentMessage;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.domain.repository.RefundOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.application.dto.callback.RefundNotifyRequest;
+import com.semgravio.payment.application.dto.command.ResendNotificationCommand;
+import com.semgravio.payment.application.mapper.PaymentOrderMapper;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.aggregate.RefundOrder;
+import com.semgravio.payment.domain.enums.OperationLogTargetType;
+import com.semgravio.payment.domain.enums.OperationType;
+import com.semgravio.payment.domain.error.PaymentMessage;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.domain.repository.RefundOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
 import com.cartisan.core.context.RequestContext;
 import com.cartisan.core.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
@@ -521,10 +521,10 @@ Expected: PASS（6 个测试全绿）。
 - [ ] **Step 7: 提交**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/command/ResendNotificationCommand.java \
-        src/main/java/com/aieducenter/payment/domain/error/PaymentMessage.java \
-        src/main/java/com/aieducenter/payment/application/NotificationResendAppService.java \
-        src/test/java/com/aieducenter/payment/application/NotificationResendAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/command/ResendNotificationCommand.java \
+        src/main/java/com/semgravio/payment/domain/error/PaymentMessage.java \
+        src/main/java/com/semgravio/payment/application/NotificationResendAppService.java \
+        src/test/java/com/semgravio/payment/application/NotificationResendAppServiceTest.java
 git commit -m "feat(payment): NotificationResendAppService（仅终态重发 + 不改状态 + 落 OperationLog）
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -535,8 +535,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ### Task 3: 两个重发端点（薄委托，`@RequireSignature`）
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java`
-- Modify: `src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java`
+- Modify: `src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java`
 
 **Interfaces:**
 - Consumes（Task 2 产出）：`NotificationResendAppService.resendPaymentNotification` / `resendRefundNotification`
@@ -554,8 +554,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 并补 import：
 
 ```java
-import com.aieducenter.payment.application.NotificationResendAppService;
-import com.aieducenter.payment.application.dto.command.ResendNotificationCommand;
+import com.semgravio.payment.application.NotificationResendAppService;
+import com.semgravio.payment.application.dto.command.ResendNotificationCommand;
 ```
 
 在 `cancelPayment` 方法之后追加端点：
@@ -584,8 +584,8 @@ import com.aieducenter.payment.application.dto.command.ResendNotificationCommand
 并补 import：
 
 ```java
-import com.aieducenter.payment.application.NotificationResendAppService;
-import com.aieducenter.payment.application.dto.command.ResendNotificationCommand;
+import com.semgravio.payment.application.NotificationResendAppService;
+import com.semgravio.payment.application.dto.command.ResendNotificationCommand;
 ```
 
 在 `auditRefund` 方法之后（或 `list` 之前）追加端点：
@@ -611,8 +611,8 @@ Expected: 全绿（含既有 `SignatureVerificationIntegrationTest` / `Architect
 - [ ] **Step 4: 提交**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentApiV1Controller.java \
-        src/main/java/com/aieducenter/payment/endpoints/api/v1/RefundApiV1Controller.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentApiV1Controller.java \
+        src/main/java/com/semgravio/payment/endpoints/api/v1/RefundApiV1Controller.java
 git commit -m "feat(payment): POST payments/refunds/{no}/notifications/resend 端点（@RequireSignature）
 
 Co-Authored-By: Claude <noreply@anthropic.com>"
@@ -630,8 +630,8 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 在 `pom.xml` pitest `<targetClasses>` 块末尾（`OrderLifecycleAppService` 之后）加一行，并在上方注释块补一行 issue #16 说明：
 
 ```xml
-                        <param>com.aieducenter.payment.application.OrderLifecycleAppService</param>
-                        <param>com.aieducenter.payment.application.NotificationResendAppService</param>
+                        <param>com.semgravio.payment.application.OrderLifecycleAppService</param>
+                        <param>com.semgravio.payment.application.NotificationResendAppService</param>
 ```
 
 注释块追加（与既有 issue #10..#14 同构）：

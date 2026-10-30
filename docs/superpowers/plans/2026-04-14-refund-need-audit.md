@@ -13,8 +13,8 @@
 ### Task 1: CreateRefundCommand 增加 needAudit 字段
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java`
-- Test: `src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java`
+- Modify: `src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java`
+- Test: `src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java`
 
 - [ ] **Step 1: 写失败测试 — needAudit=false 时自动审核通过**
 
@@ -73,7 +73,7 @@ Expected: 编译失败（CreateRefundCommand record 没有 needAudit 字段）
 
 - [ ] **Step 3: 修改 CreateRefundCommand，增加 needAudit 字段**
 
-修改 `src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java`：
+修改 `src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java`：
 
 ```java
 public record CreateRefundCommand(
@@ -108,7 +108,7 @@ public record CreateRefundCommand(
 
 - [ ] **Step 4: 修改 RefundAppService.createRefund()，needAudit=false 时自动审核通过**
 
-修改 `src/main/java/com/aieducenter/payment/application/RefundAppService.java` 的 `createRefund` 方法：
+修改 `src/main/java/com/semgravio/payment/application/RefundAppService.java` 的 `createRefund` 方法：
 
 ```java
 @Transactional
@@ -168,9 +168,9 @@ Expected: 所有测试 PASS
 - [ ] **Step 7: 提交**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/command/CreateRefundCommand.java \
-        src/main/java/com/aieducenter/payment/application/RefundAppService.java \
-        src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/command/CreateRefundCommand.java \
+        src/main/java/com/semgravio/payment/application/RefundAppService.java \
+        src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java
 git commit -m "feat: 创建退款支持 needAudit 参数，false 时自动审核通过并发起退款"
 ```
 
@@ -179,8 +179,8 @@ git commit -m "feat: 创建退款支持 needAudit 参数，false 时自动审核
 ### Task 2: 审核拒绝时回调业务端
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/application/RefundAppService.java`
-- Test: `src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java`
+- Modify: `src/main/java/com/semgravio/payment/application/RefundAppService.java`
+- Test: `src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java`
 
 - [ ] **Step 1: 写失败测试 — 审核拒绝时回调业务端**
 
@@ -213,7 +213,7 @@ Expected: FAIL — `businessSystemNotifier.notify` 未被调用
 
 - [ ] **Step 3: 修改 RefundAppService.auditRefund()，拒绝时增加回调**
 
-修改 `src/main/java/com/aieducenter/payment/application/RefundAppService.java` 的 `auditRefund` 方法：
+修改 `src/main/java/com/semgravio/payment/application/RefundAppService.java` 的 `auditRefund` 方法：
 
 ```java
 public RefundOrderResponse auditRefund(String refundOrderNo, AuditRefundCommand command) {
@@ -292,8 +292,8 @@ Expected: 所有测试 PASS
 - [ ] **Step 5: 提交**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/RefundAppService.java \
-        src/test/java/com/aieducenter/payment/application/RefundAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/RefundAppService.java \
+        src/test/java/com/semgravio/payment/application/RefundAppServiceTest.java
 git commit -m "feat: 审核拒绝时回调业务系统，notifyIfTerminal 统一处理终态通知"
 ```
 

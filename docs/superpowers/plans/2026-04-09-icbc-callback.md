@@ -18,47 +18,47 @@
 
 | File | Responsibility |
 |---|---|
-| `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentCallbackController.java` | REST endpoint: `POST /api/v1/payment/callbacks/icbc` |
-| `src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java` | Orchestrate callback: verify → update → log → notify |
-| `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifier.java` | RSA signature verification + RSA2 response signing |
-| `src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java` | HTTP POST JSON to business system notifyUrl |
-| `src/main/java/com/aieducenter/payment/application/dto/callback/IcbcCallbackParam.java` | Parsed ICBC callback data (from biz_content) |
-| `src/main/java/com/aieducenter/payment/application/dto/callback/BusinessNotifyRequest.java` | Request body sent to business system |
+| `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentCallbackController.java` | REST endpoint: `POST /api/v1/payment/callbacks/icbc` |
+| `src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java` | Orchestrate callback: verify → update → log → notify |
+| `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifier.java` | RSA signature verification + RSA2 response signing |
+| `src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java` | HTTP POST JSON to business system notifyUrl |
+| `src/main/java/com/semgravio/payment/application/dto/callback/IcbcCallbackParam.java` | Parsed ICBC callback data (from biz_content) |
+| `src/main/java/com/semgravio/payment/application/dto/callback/BusinessNotifyRequest.java` | Request body sent to business system |
 | `src/main/resources/db/migration/V3__add_actual_amount.sql` | Add actual_amount column to payment orders table |
-| `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderCallbackTest.java` | Tests for actualAmount + markAsPaid changes |
-| `src/test/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java` | Tests for signature verify + response sign |
-| `src/test/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifierTest.java` | Tests for business notification |
-| `src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceTest.java` | Tests for callback orchestration |
+| `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderCallbackTest.java` | Tests for actualAmount + markAsPaid changes |
+| `src/test/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java` | Tests for signature verify + response sign |
+| `src/test/java/com/semgravio/payment/infrastructure/BusinessSystemNotifierTest.java` | Tests for business notification |
+| `src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceTest.java` | Tests for callback orchestration |
 
 ### Modified Files
 
 | File | Change |
 |---|---|
-| `src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java` | Add `actualAmount` field, update `markAsPaid()` signature |
-| `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java` | Add `notifyBaseUrl` field |
-| `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java` | Change `mer_url` to use config, change `result_type` to `"0"` |
+| `src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java` | Add `actualAmount` field, update `markAsPaid()` signature |
+| `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java` | Add `notifyBaseUrl` field |
+| `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java` | Change `mer_url` to use config, change `result_type` to `"0"` |
 | `src/main/resources/application-local.yml` | Add `gateway.icbc.*` config section |
-| `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderTest.java` | Update existing markAsPaid test for new signature |
+| `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderTest.java` | Update existing markAsPaid test for new signature |
 
 ---
 
 ## Task 1: Add `actualAmount` to PaymentOrder Domain Model
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java`
+- Modify: `src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java`
 - Create: `src/main/resources/db/migration/V3__add_actual_amount.sql`
-- Create: `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderCallbackTest.java`
-- Modify: `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderTest.java`
+- Create: `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderCallbackTest.java`
+- Modify: `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderTest.java`
 
 - [ ] **Step 1: Write failing test for markAsPaid with actualAmount**
 
-Create `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderCallbackTest.java`:
+Create `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderCallbackTest.java`:
 
 ```java
-package com.aieducenter.payment.domain.aggregate;
+package com.semgravio.payment.domain.aggregate;
 
-import com.aieducenter.payment.domain.enums.PaymentMethod;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.enums.PaymentMethod;
+import com.semgravio.payment.domain.enums.PaymentStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -118,12 +118,12 @@ class PaymentOrderCallbackTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=PaymentOrderCallbackTest -Dsurefire.failIfNoSpecifiedTests=false`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=PaymentOrderCallbackTest -Dsurefire.failIfNoSpecifiedTests=false`
 Expected: FAIL — `markAsPaid(String, String, PaymentMethod, Long)` method does not exist
 
 - [ ] **Step 3: Update existing markAsPaid test**
 
-In `src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderTest.java`, find the existing `markAsPaid` test and update the call from:
+In `src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderTest.java`, find the existing `markAsPaid` test and update the call from:
 ```java
 paymentOrder.markAsPaid("ICBC123", "THIRD456", PaymentMethod.WECHAT);
 ```
@@ -136,7 +136,7 @@ Search for all occurrences of `markAsPaid(` in the file and update them to inclu
 
 - [ ] **Step 4: Implement actualAmount in PaymentOrder entity**
 
-In `src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java`:
+In `src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java`:
 
 Add field after `thirdPartyOrderNo` (around line 95):
 ```java
@@ -165,7 +165,7 @@ Change `markAsPaid` method signature (around line 155):
 
 - [ ] **Step 5: Run all PaymentOrder tests to verify they pass**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest="PaymentOrderTest,PaymentOrderCallbackTest"`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest="PaymentOrderTest,PaymentOrderCallbackTest"`
 Expected: ALL PASS
 
 - [ ] **Step 6: Create Flyway migration**
@@ -185,7 +185,7 @@ ALTER TABLE pay_payment_orders ADD COLUMN actual_amount BIGINT;
 - [ ] **Step 7: Fix other usages of markAsPaid**
 
 Search the entire codebase for `markAsPaid(` calls and update them to the new 4-parameter signature. Key file to check:
-- `src/main/java/com/aieducenter/payment/application/PaymentAppService.java` — the `queryPaymentStatus` method calls `markAsPaid`. Update to pass `queryResponse.paidAmount()` as the 4th arg. Also check `QueryPaymentResponse` — it has `paidAmount` which maps correctly.
+- `src/main/java/com/semgravio/payment/application/PaymentAppService.java` — the `queryPaymentStatus` method calls `markAsPaid`. Update to pass `queryResponse.paidAmount()` as the 4th arg. Also check `QueryPaymentResponse` — it has `paidAmount` which maps correctly.
 
 Update `PaymentAppService.queryPaymentStatus()`:
 ```java
@@ -199,17 +199,17 @@ paymentOrder.markAsPaid(
 
 - [ ] **Step 8: Run all tests**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test`
 Expected: ALL PASS
 
 - [ ] **Step 9: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/domain/aggregate/PaymentOrder.java \
+git add src/main/java/com/semgravio/payment/domain/aggregate/PaymentOrder.java \
   src/main/resources/db/migration/V3__add_actual_amount.sql \
-  src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderCallbackTest.java \
-  src/test/java/com/aieducenter/payment/domain/aggregate/PaymentOrderTest.java \
-  src/main/java/com/aieducenter/payment/application/PaymentAppService.java
+  src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderCallbackTest.java \
+  src/test/java/com/semgravio/payment/domain/aggregate/PaymentOrderTest.java \
+  src/main/java/com/semgravio/payment/application/PaymentAppService.java
 git commit -m "feat(payment): add actualAmount field to PaymentOrder for callback support"
 ```
 
@@ -218,13 +218,13 @@ git commit -m "feat(payment): add actualAmount field to PaymentOrder for callbac
 ## Task 2: Update IcbcConfig and Fix Adapter
 
 **Files:**
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java`
-- Modify: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java`
+- Modify: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`
 - Modify: `src/main/resources/application-local.yml`
 
 - [ ] **Step 1: Add notifyBaseUrl to IcbcConfig**
 
-In `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java`, add after the existing fields:
+In `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java`, add after the existing fields:
 
 ```java
     /**
@@ -236,7 +236,7 @@ In `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java`, 
 
 - [ ] **Step 2: Fix IcbcPaymentGatewayAdapter**
 
-In `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`, make two changes:
+In `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java`, make two changes:
 
 **Change 1** — Replace `mer_url` line (around line 58):
 ```java
@@ -272,14 +272,14 @@ gateway:
 
 - [ ] **Step 4: Run compilation to verify**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw compile -q`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw compile -q`
 Expected: BUILD SUCCESS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcConfig.java \
-  src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java \
+git add src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcConfig.java \
+  src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcPaymentGatewayAdapter.java \
   src/main/resources/application-local.yml
 git commit -m "feat(payment): add notifyBaseUrl config and fix result_type to receive all callbacks"
 ```
@@ -289,15 +289,15 @@ git commit -m "feat(payment): add notifyBaseUrl config and fix result_type to re
 ## Task 3: ICBC Callback Verifier (Signature Verification + Response Signing)
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifier.java`
-- Create: `src/test/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java`
+- Create: `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifier.java`
+- Create: `src/test/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java`
 
 - [ ] **Step 1: Write failing tests for IcbcCallbackVerifier**
 
-Create `src/test/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java`:
+Create `src/test/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java`:
 
 ```java
-package com.aieducenter.payment.infrastructure.icbc;
+package com.semgravio.payment.infrastructure.icbc;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -429,15 +429,15 @@ class IcbcCallbackVerifierTest {
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=IcbcCallbackVerifierTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=IcbcCallbackVerifierTest`
 Expected: FAIL — class does not exist
 
 - [ ] **Step 3: Implement IcbcCallbackVerifier**
 
-Create `src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifier.java`:
+Create `src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifier.java`:
 
 ```java
-package com.aieducenter.payment.infrastructure.icbc;
+package com.semgravio.payment.infrastructure.icbc;
 
 import com.cartisan.core.stereotype.Adapter;
 import com.cartisan.core.stereotype.PortType;
@@ -578,14 +578,14 @@ public class IcbcCallbackVerifier {
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=IcbcCallbackVerifierTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=IcbcCallbackVerifierTest`
 Expected: ALL PASS
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifier.java \
-  src/test/java/com/aieducenter/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java
+git add src/main/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifier.java \
+  src/test/java/com/semgravio/payment/infrastructure/icbc/IcbcCallbackVerifierTest.java
 git commit -m "feat(payment): add ICBC callback signature verifier with RSA verify and RSA2 sign"
 ```
 
@@ -594,16 +594,16 @@ git commit -m "feat(payment): add ICBC callback signature verifier with RSA veri
 ## Task 4: Business System Notifier
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java`
-- Create: `src/main/java/com/aieducenter/payment/application/dto/callback/BusinessNotifyRequest.java`
-- Create: `src/test/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifierTest.java`
+- Create: `src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/callback/BusinessNotifyRequest.java`
+- Create: `src/test/java/com/semgravio/payment/infrastructure/BusinessSystemNotifierTest.java`
 
 - [ ] **Step 1: Create BusinessNotifyRequest DTO**
 
-Create `src/main/java/com/aieducenter/payment/application/dto/callback/BusinessNotifyRequest.java`:
+Create `src/main/java/com/semgravio/payment/application/dto/callback/BusinessNotifyRequest.java`:
 
 ```java
-package com.aieducenter.payment.application.dto.callback;
+package com.semgravio.payment.application.dto.callback;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 
@@ -642,12 +642,12 @@ public record BusinessNotifyRequest(
 
 - [ ] **Step 2: Write failing test for BusinessSystemNotifier**
 
-Create `src/test/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifierTest.java`:
+Create `src/test/java/com/semgravio/payment/infrastructure/BusinessSystemNotifierTest.java`:
 
 ```java
-package com.aieducenter.payment.infrastructure;
+package com.semgravio.payment.infrastructure;
 
-import com.aieducenter.payment.application.dto.callback.BusinessNotifyRequest;
+import com.semgravio.payment.application.dto.callback.BusinessNotifyRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -703,17 +703,17 @@ class BusinessSystemNotifierTest {
 
 - [ ] **Step 3: Run test to verify it fails**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=BusinessSystemNotifierTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=BusinessSystemNotifierTest`
 Expected: FAIL — class does not exist
 
 - [ ] **Step 4: Implement BusinessSystemNotifier**
 
-Create `src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java`:
+Create `src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java`:
 
 ```java
-package com.aieducenter.payment.infrastructure;
+package com.semgravio.payment.infrastructure;
 
-import com.aieducenter.payment.application.dto.callback.BusinessNotifyRequest;
+import com.semgravio.payment.application.dto.callback.BusinessNotifyRequest;
 import com.alibaba.fastjson2.JSON;
 import com.cartisan.core.stereotype.Adapter;
 import com.cartisan.core.stereotype.PortType;
@@ -790,15 +790,15 @@ public class BusinessSystemNotifier {
 
 - [ ] **Step 5: Run tests**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=BusinessSystemNotifierTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=BusinessSystemNotifierTest`
 Expected: ALL PASS
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifier.java \
-  src/main/java/com/aieducenter/payment/application/dto/callback/BusinessNotifyRequest.java \
-  src/test/java/com/aieducenter/payment/infrastructure/BusinessSystemNotifierTest.java
+git add src/main/java/com/semgravio/payment/infrastructure/BusinessSystemNotifier.java \
+  src/main/java/com/semgravio/payment/application/dto/callback/BusinessNotifyRequest.java \
+  src/test/java/com/semgravio/payment/infrastructure/BusinessSystemNotifierTest.java
 git commit -m "feat(payment): add business system notifier for payment result forwarding"
 ```
 
@@ -807,16 +807,16 @@ git commit -m "feat(payment): add business system notifier for payment result fo
 ## Task 5: Create IcbcCallbackParam DTO + PaymentCallbackAppService
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/application/dto/callback/IcbcCallbackParam.java`
-- Create: `src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java`
-- Create: `src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceTest.java`
+- Create: `src/main/java/com/semgravio/payment/application/dto/callback/IcbcCallbackParam.java`
+- Create: `src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java`
+- Create: `src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceTest.java`
 
 - [ ] **Step 1: Create IcbcCallbackParam DTO**
 
-Create `src/main/java/com/aieducenter/payment/application/dto/callback/IcbcCallbackParam.java`:
+Create `src/main/java/com/semgravio/payment/application/dto/callback/IcbcCallbackParam.java`:
 
 ```java
-package com.aieducenter.payment.application.dto.callback;
+package com.semgravio.payment.application.dto.callback;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 
@@ -862,21 +862,21 @@ public record IcbcCallbackParam(
 
 - [ ] **Step 2: Write failing test for PaymentCallbackAppService**
 
-Create `src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceTest.java`:
+Create `src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceTest.java`:
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.BusinessNotifyRequest;
-import com.aieducenter.payment.application.dto.callback.IcbcCallbackParam;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.PaymentMethod;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
-import com.aieducenter.payment.infrastructure.icbc.IcbcCallbackVerifier;
+import com.semgravio.payment.application.dto.callback.BusinessNotifyRequest;
+import com.semgravio.payment.application.dto.callback.IcbcCallbackParam;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.PaymentMethod;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.infrastructure.icbc.IcbcCallbackVerifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -1047,26 +1047,26 @@ class PaymentCallbackAppServiceTest {
 
 - [ ] **Step 3: Run test to verify it fails**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=PaymentCallbackAppServiceTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=PaymentCallbackAppServiceTest`
 Expected: FAIL — class does not exist
 
 - [ ] **Step 4: Implement PaymentCallbackAppService**
 
-Create `src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java`:
+Create `src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java`:
 
 ```java
-package com.aieducenter.payment.application;
+package com.semgravio.payment.application;
 
-import com.aieducenter.payment.application.dto.callback.BusinessNotifyRequest;
-import com.aieducenter.payment.application.dto.callback.IcbcCallbackParam;
-import com.aieducenter.payment.domain.aggregate.PaymentLog;
-import com.aieducenter.payment.domain.aggregate.PaymentOrder;
-import com.aieducenter.payment.domain.enums.PaymentMethod;
-import com.aieducenter.payment.domain.enums.PaymentStatus;
-import com.aieducenter.payment.domain.repository.PaymentLogRepository;
-import com.aieducenter.payment.domain.repository.PaymentOrderRepository;
-import com.aieducenter.payment.infrastructure.BusinessSystemNotifier;
-import com.aieducenter.payment.infrastructure.icbc.IcbcCallbackVerifier;
+import com.semgravio.payment.application.dto.callback.BusinessNotifyRequest;
+import com.semgravio.payment.application.dto.callback.IcbcCallbackParam;
+import com.semgravio.payment.domain.aggregate.PaymentLog;
+import com.semgravio.payment.domain.aggregate.PaymentOrder;
+import com.semgravio.payment.domain.enums.PaymentMethod;
+import com.semgravio.payment.domain.enums.PaymentStatus;
+import com.semgravio.payment.domain.repository.PaymentLogRepository;
+import com.semgravio.payment.domain.repository.PaymentOrderRepository;
+import com.semgravio.payment.infrastructure.BusinessSystemNotifier;
+import com.semgravio.payment.infrastructure.icbc.IcbcCallbackVerifier;
 import com.alibaba.fastjson2.JSON;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -1228,15 +1228,15 @@ public class PaymentCallbackAppService {
 
 - [ ] **Step 5: Run tests**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test -pl . -Dtest=PaymentCallbackAppServiceTest`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test -pl . -Dtest=PaymentCallbackAppServiceTest`
 Expected: ALL PASS
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/application/dto/callback/IcbcCallbackParam.java \
-  src/main/java/com/aieducenter/payment/application/PaymentCallbackAppService.java \
-  src/test/java/com/aieducenter/payment/application/PaymentCallbackAppServiceTest.java
+git add src/main/java/com/semgravio/payment/application/dto/callback/IcbcCallbackParam.java \
+  src/main/java/com/semgravio/payment/application/PaymentCallbackAppService.java \
+  src/test/java/com/semgravio/payment/application/PaymentCallbackAppServiceTest.java
 git commit -m "feat(payment): add callback app service with verification, order update, and notification"
 ```
 
@@ -1245,17 +1245,17 @@ git commit -m "feat(payment): add callback app service with verification, order 
 ## Task 6: Create PaymentCallbackController
 
 **Files:**
-- Create: `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentCallbackController.java`
+- Create: `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentCallbackController.java`
 
 - [ ] **Step 1: Implement controller**
 
-Create `src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentCallbackController.java`:
+Create `src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentCallbackController.java`:
 
 ```java
-package com.aieducenter.payment.endpoints.api.v1;
+package com.semgravio.payment.endpoints.api.v1;
 
-import com.aieducenter.payment.application.PaymentCallbackAppService;
-import com.aieducenter.payment.application.dto.callback.IcbcCallbackParam;
+import com.semgravio.payment.application.PaymentCallbackAppService;
+import com.semgravio.payment.application.dto.callback.IcbcCallbackParam;
 import com.alibaba.fastjson2.JSON;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -1321,13 +1321,13 @@ public class PaymentCallbackController {
 
 - [ ] **Step 2: Verify compilation**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw compile -q`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw compile -q`
 Expected: BUILD SUCCESS
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/main/java/com/aieducenter/payment/endpoints/api/v1/PaymentCallbackController.java
+git add src/main/java/com/semgravio/payment/endpoints/api/v1/PaymentCallbackController.java
 git commit -m "feat(payment): add ICBC callback controller endpoint POST /api/v1/payment/callbacks/icbc"
 ```
 
@@ -1339,12 +1339,12 @@ git commit -m "feat(payment): add ICBC callback controller endpoint POST /api/v1
 
 - [ ] **Step 1: Run all tests**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw test`
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw test`
 Expected: ALL PASS
 
 - [ ] **Step 2: Verify application starts**
 
-Run: `cd /Users/zhangcolin/workspace/hcy_payment && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local` (then Ctrl+C after startup)
+Run: `cd /Users/zhangcolin/workspace/semgravio_payment && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local` (then Ctrl+C after startup)
 
 Expected: Application starts without errors. The ICBC callback endpoint is registered.
 
